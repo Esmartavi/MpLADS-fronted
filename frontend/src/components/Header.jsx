@@ -86,9 +86,12 @@ export default function Header({ activeRole, onRoleChange, onOpenSecretaryBriefi
             {[
               { id: 'overview', label: 'War Room' },
               { id: 'alerts', label: 'Live Flags' },
+              { id: 'validation', label: '🎯 Model Accuracy' },
               { id: 'benford', label: "Benford's Law" },
+              { id: 'ocr', label: '🔬 OCR Lab' },
+              { id: 'phash', label: '🖼️ pHash Viewer' },
               { id: 'vendors', label: 'Vendor Rings' },
-              { id: 'map', label: 'Geo Vigilance' },
+              { id: 'map', label: '🗺️ India Risk Map' },
               { id: 'audit', label: 'Audit Ledger' },
             ].map(tab => (
               <button
@@ -178,9 +181,12 @@ export default function Header({ activeRole, onRoleChange, onOpenSecretaryBriefi
           {[
             { id: 'overview', label: 'War Room' },
             { id: 'alerts', label: 'Live Flags' },
+            { id: 'validation', label: 'Accuracy' },
             { id: 'benford', label: "Benford's Law" },
+            { id: 'ocr', label: 'OCR Lab' },
+            { id: 'phash', label: 'pHash' },
             { id: 'vendors', label: 'Vendors' },
-            { id: 'map', label: 'Geo Vigilance' },
+            { id: 'map', label: '🗺️ India Map' },
             { id: 'audit', label: 'Audit Log' },
           ].map(tab => (
             <button

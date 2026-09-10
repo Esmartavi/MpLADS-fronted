@@ -23,4 +23,7 @@ images/Shri_*
 # Large raw archive snapshots
 data/raw/archives/
 forensics/works_with_images_registry.json
-
+database.sqlite
+images/downloaded_pdfs/
+scratch/*.geojson
+scratch/*.svg

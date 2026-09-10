@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 
-export default function LiveAlertFeed({ onSelectWork, initialTier = 'all' }) {
+export default function LiveAlertFeed({ onSelectWork, initialTier = 'all', activeRole = 'ministry' }) {
   const [flags, setFlags] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,14 @@ export default function LiveAlertFeed({ onSelectWork, initialTier = 'all' }) {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  // Load States for dropdown
+  // Load States for dropdown & re-fetch when activeRole changes
   useEffect(() => {
+    setPage(1);
+    setStateFilter('all');
     api.getStates()
       .then(res => setStates(res.states || []))
       .catch(() => {});
-  }, []);
+  }, [activeRole]);
 
   // Sync tier if parent updates it
   useEffect(() => {

@@ -21,7 +21,12 @@ import {
   Users,
   Compass,
   Eye,
-  ArrowRight
+  ArrowRight,
+  Maximize2,
+  AlertOctagon,
+  CheckCircle2,
+  Hash,
+  ExternalLink
 } from 'lucide-react';
 import { api, API_BASE } from '../services/api';
 
@@ -37,6 +42,7 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ai_memo');
   const [showSampleOcr, setShowSampleOcr] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   
   // AI Explainer state
   const [aiData, setAiData] = useState(null);
@@ -45,7 +51,7 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
   const [streamedContent, setStreamedContent] = useState('');
   
   // Auditor resolution state
-  const [actionType, setActionType] = useState('dismiss');
+  const [actionType, setActionType] = useState('TREASURY_HOLD_RECOMMENDED');
   const [justification, setJustification] = useState('');
   const [submittingAction, setSubmittingAction] = useState(false);
   const [actionSuccess, setActionSuccess] = useState(null);
@@ -473,15 +479,34 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
               {activeTab === 'images' && (
                 <div className="space-y-6">
                   
+                  {/* Forensics Scope Banner */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      <span className="font-semibold text-white">Multi-Modal AI Forensic Dossier:</span>
+                      <span className="text-slate-400">
+                        {docForensics.length} Scanned Certificate(s) Audited • {dupEvidence.length} Recycled Photo Collision(s)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 font-mono text-[10px] border border-cyan-500/30">
+                        RapidOCR ONNX Neural Engine
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono text-[10px] border border-amber-500/30">
+                        PyMuPDF 300 DPI Rasterizer
+                      </span>
+                    </div>
+                  </div>
+
                   {/* PILLAR 1: VISUAL IMAGE FORENSICS (pHash & EXIF) */}
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-white flex items-center gap-2">
                         <ImageIcon className="w-4 h-4 text-cyan-400" />
-                        Pillar 1: Perceptual Hash (pHash) & Recycled Photo Detection
+                        Pillar 1: Perceptual Hash (pHash) &amp; Recycled Photo Detection
                       </div>
                       {workObj?.is_duplicate || dupEvidence.length > 0 ? (
-                        <span className="px-2 py-0.5 text-[10px] font-bold font-mono rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                        <span className="px-2 py-0.5 text-[10px] font-bold font-mono rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
                           PERCEPTUAL DUPLICATE DETECTED
                         </span>
                       ) : (
@@ -505,7 +530,9 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
                       <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
                         <span className="text-slate-400 font-mono text-[10px] uppercase">Visual Hash Distance</span>
                         <div className="text-white font-mono">
-                          {dupEvidence.length > 0 ? `Hamming Distance: ${dupEvidence[0]?.hamming_distance} (${dupEvidence[0]?.similarity_pct}% Match)` : (workObj?.is_duplicate ? 'Hamming Distance: 0 (100% Match)' : 'Hamming Distance: Unique (> 15)')}
+                          {dupEvidence.length > 0 
+                            ? `Hamming Distance: ${dupEvidence[0]?.hamming_distance} (${dupEvidence[0]?.similarity_pct}% Match)` 
+                            : (workObj?.is_duplicate ? 'Hamming Distance: 0 (100% Match)' : 'Hamming Distance: Unique (> 15)')}
                         </div>
                         <div className="text-[11px] text-slate-400">
                           Cross-checked across 109 persistent perceptual fingerprints in vault.
@@ -522,6 +549,91 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
                         <p className="text-[11px] text-rose-200/90 leading-relaxed">
                           {dupEvidence[0]?.verdict || 'The uploaded ground photo matches an identical photograph submitted for an earlier scheme. High likelihood of recycled proof of completion.'}
                         </p>
+                      </div>
+                    )}
+
+                    {/* Twin Photo Comparison Cards if Duplicate Evidence Exists */}
+                    {dupEvidence.length > 0 && (
+                      <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                        <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                          Visual Evidence: Recycled Ground Photo Collisions ({dupEvidence.length} Matches Found)
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          {dupEvidence.slice(0, 2).map((dup, dIdx) => (
+                            <div key={dIdx} className="p-3.5 rounded-xl bg-slate-950/90 border border-rose-500/30 space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/40">
+                                    HAMMING: {dup.hamming_distance} ({dup.similarity_pct}% MATCH)
+                                  </span>
+                                  <span className="text-[11px] text-slate-300 font-mono">
+                                    {dup.collision_type || 'EXACT_PERCEPTUAL_TWIN'}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  Algorithm: 64-bit DCT pHash
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Photo 1 */}
+                                <div className="group relative rounded-lg overflow-hidden border border-slate-800 bg-black">
+                                  <img 
+                                    src={`${API_BASE}/images/extracted/${dup.file_1}`} 
+                                    alt={dup.file_1}
+                                    className="w-full h-44 object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
+                                    <div className="text-[10px] font-bold text-cyan-300 truncate">
+                                      Source A: #{dup.numeric_work_id_1 || dup.work_id_1}
+                                    </div>
+                                    <div className="text-[9px] text-slate-300 truncate">
+                                      {dup.scheme_1 || dup.source_1 || dup.file_1}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewImage({ src: `${API_BASE}/images/extracted/${dup.file_1}`, title: `Work #${dup.numeric_work_id_1 || dup.work_id_1}: ${dup.file_1}` })}
+                                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-black text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                                  >
+                                    <Maximize2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                {/* Photo 2 */}
+                                <div className="group relative rounded-lg overflow-hidden border border-rose-500/40 bg-black">
+                                  <img 
+                                    src={`${API_BASE}/images/extracted/${dup.file_2}`} 
+                                    alt={dup.file_2}
+                                    className="w-full h-44 object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
+                                    <div className="text-[10px] font-bold text-rose-300 truncate">
+                                      Source B: #{dup.numeric_work_id_2 || dup.work_id_2}
+                                    </div>
+                                    <div className="text-[9px] text-slate-300 truncate">
+                                      {dup.scheme_2 || dup.source_2 || dup.file_2}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewImage({ src: `${API_BASE}/images/extracted/${dup.file_2}`, title: `Work #${dup.numeric_work_id_2 || dup.work_id_2}: ${dup.file_2}` })}
+                                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-black text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                                  >
+                                    <Maximize2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <p className="text-[11px] text-rose-200/90 bg-rose-950/40 p-2.5 rounded-lg border border-rose-500/20 leading-relaxed">
+                                <strong>Ground Reality:</strong> {dup.verdict}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -553,217 +665,330 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
 
                     {/* Active Work's Document Verdicts */}
                     {docForensics.length > 0 ? (
-                      <div className="space-y-4">
-                        {docForensics.map((doc, idx) => (
-                          <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-mono text-cyan-300 font-semibold">{doc.pdf_file}</span>
-                              <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">
-                                {doc.document_classification}
-                              </span>
-                            </div>
+                      <div className="space-y-6">
+                        {docForensics.map((doc, idx) => {
+                          const portalAmt = doc.portal_record?.disbursed_amount || 0;
+                          const paperAmt = doc.paper_extracted?.approved_amount || 0;
+                          const discrepancy = portalAmt - paperAmt;
+                          const hasMismatch = doc.findings?.some(f => f.code === 'PORTAL_PAPER_AMOUNT_MISMATCH');
+                          const hasCrossScheme = doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD');
+                          const hasVendorDiscrepancy = doc.findings?.some(f => f.code === 'UNREPORTED_VENDOR_DISCREPANCY');
+                          const hasLocationMismatch = doc.findings?.some(f => f.code === 'LOCATION_MISMATCH');
 
-                            {/* 4 Critical Tasks Breakdown */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                              {/* Task 1: Money Mismatch */}
-                              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
-                                <div className="flex items-center justify-between font-semibold">
-                                  <span className="text-slate-300 flex items-center gap-1">
-                                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                                    Task 1: Financial Audit
-                                  </span>
-                                  {doc.findings?.some(f => f.code === 'PORTAL_PAPER_AMOUNT_MISMATCH') ? (
-                                    <span className="text-[10px] text-rose-400 font-mono font-bold">MISMATCH FLAGGED</span>
-                                  ) : (
-                                    <span className="text-[10px] text-emerald-400 font-mono">ALIGNED</span>
-                                  )}
+                          return (
+                            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
+                              {/* Document Meta Header */}
+                              <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-b border-slate-800/80 pb-3">
+                                <div className="flex items-center space-x-2">
+                                  <FileText className="w-4 h-4 text-cyan-400" />
+                                  <span className="font-mono text-cyan-300 font-semibold">{doc.pdf_file}</span>
                                 </div>
-                                <div className="text-[11px] text-slate-400 space-y-0.5">
-                                  <div>Portal Disbursed: <strong className="text-slate-200">₹{(doc.portal_record?.disbursed_amount || 0).toLocaleString('en-IN')}</strong></div>
-                                  <div>Paper Approved: <strong className="text-amber-300">₹{(doc.paper_extracted?.approved_amount || 0).toLocaleString('en-IN')}</strong></div>
-                                  {doc.findings?.some(f => f.code === 'PORTAL_PAPER_AMOUNT_MISMATCH') && (
-                                    <div className="text-rose-400 font-semibold pt-1">
-                                      Unaccounted Gap: ₹{((doc.portal_record?.disbursed_amount || 0) - (doc.paper_extracted?.approved_amount || 0)).toLocaleString('en-IN')}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Task 2: Cross-Scheme Double Dipping */}
-                              <div className={`p-3 rounded-lg bg-slate-900 border space-y-1.5 ${
-                                doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD')
-                                  ? 'border-rose-500/80 bg-rose-950/20 shadow-lg shadow-rose-950/40'
-                                  : 'border-slate-800'
-                              }`}>
-                                <div className="flex items-center justify-between font-semibold">
-                                  <span className="text-slate-300 flex items-center gap-1">
-                                    <ShieldAlert className={`w-3.5 h-3.5 ${
-                                      doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD')
-                                        ? 'text-rose-400 animate-pulse'
-                                        : 'text-sky-400'
-                                    }`} />
-                                    Task 2: Scheme Origin (Cross-Scheme Fraud)
-                                  </span>
-                                  {doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD') ? (
-                                    <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/40 animate-pulse">
+                                <div className="flex items-center gap-2">
+                                  {hasCrossScheme && (
+                                    <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/40 animate-pulse">
                                       🚨 CROSS-SCHEME FRAUD
                                     </span>
-                                  ) : (
-                                    <span className="text-[10px] text-emerald-400 font-mono">MPLADS VERIFIED</span>
                                   )}
+                                  {hasMismatch && (
+                                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/40">
+                                      FINANCIAL GAP: +₹{discrepancy.toLocaleString('en-IN')}
+                                    </span>
+                                  )}
+                                  <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">
+                                    {doc.document_classification}
+                                  </span>
                                 </div>
-                                <div className="text-[11px] text-slate-400 space-y-1">
-                                  <div>
-                                    Header Extracted:{' '}
-                                    <strong className={doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD') ? 'text-rose-300 font-bold' : 'text-slate-200'}>
-                                      {doc.paper_extracted?.scheme_type || doc.scheme_type || 'MPLADS'}
-                                    </strong>
-                                  </div>
-                                  {doc.has_cross_scheme_fraud || doc.findings?.some(f => f.code === 'CROSS_SCHEME_FRAUD') ? (
-                                    <div className="text-[10px] text-rose-300 font-medium bg-rose-950/40 p-1.5 rounded border border-rose-500/30">
-                                      ⚠️ <strong>Double-dipping scam:</strong> State Assembly funds (KLLAD / Vidhayak Nidhi) unlawfully co-claimed under Central MPLADS.
-                                      <div className="text-[9px] text-slate-400 mt-1">Breach: GFR Rule 144 &amp; MPLADS Clause 3.12</div>
+                              </div>
+
+                              {/* Main Content: Split Grid (300 DPI Scanned Preview + 4-Task Forensic Matrix) */}
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                                
+                                {/* Col 1: 300 DPI Neural Scanned Certificate Image Preview (5 cols) */}
+                                <div className="lg:col-span-5 flex flex-col space-y-2">
+                                  <div className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900/90 flex flex-col">
+                                    <div className="px-3 py-2 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                                      <span className="flex items-center gap-1.5 text-cyan-300 font-semibold">
+                                        <FileSearch className="w-3 h-3 text-cyan-400" />
+                                        Physical Certificate Scan
+                                      </span>
+                                      <span className="text-[9px] text-amber-400">PyMuPDF 300 DPI</span>
                                     </div>
-                                  ) : (
-                                    <div className="text-[10px] text-slate-500 mt-1">Cross-check against State MLA (KLLAD / Vidhayak Nidhi) passed.</div>
-                                  )}
+                                    
+                                    <div 
+                                      className="relative w-full max-h-80 overflow-hidden bg-slate-950 flex items-center justify-center p-2 cursor-pointer group"
+                                      onClick={() => setPreviewImage({ 
+                                        src: `${API_BASE}/images/extracted/${doc.image_file}`, 
+                                        title: `${doc.pdf_file} (Page 1 - 300 DPI Neural Scan)` 
+                                      })}
+                                    >
+                                      <img
+                                        src={`${API_BASE}/images/extracted/${doc.image_file}`}
+                                        alt={doc.pdf_file}
+                                        className="w-full h-auto max-h-72 object-contain rounded border border-slate-800 shadow-md group-hover:scale-[1.02] transition-transform duration-200"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-cyan-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                        <span className="px-3 py-1.5 rounded-lg bg-black/80 text-cyan-300 text-xs font-semibold backdrop-blur-sm border border-cyan-500/40 flex items-center gap-1.5 shadow-lg">
+                                          <Maximize2 className="w-3.5 h-3.5" />
+                                          Inspect Full Resolution
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <div className="px-3 py-2 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                                      <span className="truncate max-w-[180px] font-mono">{doc.image_file}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setPreviewImage({ 
+                                          src: `${API_BASE}/images/extracted/${doc.image_file}`, 
+                                          title: `${doc.pdf_file} (Page 1 - 300 DPI Neural Scan)` 
+                                        })}
+                                        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold"
+                                      >
+                                        <Maximize2 className="w-3 h-3" />
+                                        Zoom
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Col 2: 4 Critical Tasks Discrepancy Matrix (7 cols) */}
+                                <div className="lg:col-span-7 space-y-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                    
+                                    {/* Task 1: Financial Audit */}
+                                    <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+                                      <div className="flex items-center justify-between font-semibold">
+                                        <span className="text-slate-300 flex items-center gap-1">
+                                          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                                          Task 1: Financial Audit
+                                        </span>
+                                        {hasMismatch ? (
+                                          <span className="text-[10px] text-rose-400 font-mono font-bold">MISMATCH FLAGGED</span>
+                                        ) : (
+                                          <span className="text-[10px] text-emerald-400 font-mono">ALIGNED</span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] text-slate-400 space-y-0.5">
+                                        <div>Portal Disbursed: <strong className="text-slate-200">₹{portalAmt.toLocaleString('en-IN')}</strong></div>
+                                        <div>Paper Approved: <strong className="text-amber-300 font-mono">₹{paperAmt.toLocaleString('en-IN')}</strong></div>
+                                        {hasMismatch && (
+                                          <div className="text-rose-400 font-semibold pt-1 border-t border-slate-800 mt-1">
+                                            Unaccounted Gap: +₹{discrepancy.toLocaleString('en-IN')}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Task 2: Cross-Scheme Double Dipping */}
+                                    <div className={`p-3 rounded-lg bg-slate-900 border space-y-1.5 ${
+                                      hasCrossScheme
+                                        ? 'border-rose-500/80 bg-rose-950/20 shadow-lg shadow-rose-950/40'
+                                        : 'border-slate-800'
+                                    }`}>
+                                      <div className="flex items-center justify-between font-semibold">
+                                        <span className="text-slate-300 flex items-center gap-1">
+                                          <ShieldAlert className={`w-3.5 h-3.5 ${hasCrossScheme ? 'text-rose-400 animate-pulse' : 'text-sky-400'}`} />
+                                          Task 2: Scheme Origin
+                                        </span>
+                                        {hasCrossScheme ? (
+                                          <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/40 animate-pulse">
+                                            🚨 CROSS-SCHEME
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10px] text-emerald-400 font-mono">MPLADS VERIFIED</span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] text-slate-400 space-y-1">
+                                        <div>
+                                          Header Extracted:{' '}
+                                          <strong className={hasCrossScheme ? 'text-rose-300 font-bold' : 'text-slate-200'}>
+                                            {doc.paper_extracted?.scheme_type || doc.scheme_type || 'MPLADS'}
+                                          </strong>
+                                        </div>
+                                        {hasCrossScheme ? (
+                                          <div className="text-[10px] text-rose-300 font-medium bg-rose-950/40 p-1.5 rounded border border-rose-500/30">
+                                            ⚠️ <strong>Double-dipping scam:</strong> State Assembly funds (KLLAD / Vidhayak Nidhi) unlawfully claimed under Central MPLADS.
+                                          </div>
+                                        ) : (
+                                          <div className="text-[10px] text-slate-500 mt-1">
+                                            Cross-check against State MLA funds passed.
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Task 3: Contractor Trace */}
+                                    <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+                                      <div className="flex items-center justify-between font-semibold">
+                                        <span className="text-slate-300 flex items-center gap-1">
+                                          <Users className="w-3.5 h-3.5 text-purple-400" />
+                                          Task 3: Contractor Trace
+                                        </span>
+                                        {doc.paper_extracted?.vendor_name ? (
+                                          <span className="text-[10px] text-amber-400 font-mono font-bold">BENEFICIARY UNCOVERED</span>
+                                        ) : (
+                                          <span className="text-[10px] text-slate-400 font-mono">STANDARD</span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] text-slate-400 space-y-0.5">
+                                        <div>Paper Contractor: <strong className="text-amber-300">{doc.paper_extracted?.vendor_name || 'N/A'}</strong></div>
+                                        <div>Bank A/C: <span className="font-mono text-emerald-300">{maskAccountNo(doc.paper_extracted?.account_no)}</span> <span className="px-1 py-0.2 rounded text-[9px] bg-slate-800 text-slate-400 font-mono border border-slate-700">DPDP MASKED</span></div>
+                                        <div>UTR: <span className="font-mono text-cyan-300">{doc.paper_extracted?.utr_number || 'N/A'}</span></div>
+                                      </div>
+                                    </div>
+
+                                    {/* Task 4: Location Integrity */}
+                                    <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+                                      <div className="flex items-center justify-between font-semibold">
+                                        <span className="text-slate-300 flex items-center gap-1">
+                                          <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                                          Task 4: Ground Location
+                                        </span>
+                                        {hasLocationMismatch ? (
+                                          <span className="text-[10px] text-rose-400 font-mono font-bold">CONFLICT DETECTED</span>
+                                        ) : (
+                                          <span className="text-[10px] text-emerald-400 font-mono">VERIFIED</span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] text-slate-400 space-y-0.5">
+                                        <div>Certificate Site: <strong className="text-amber-300">{doc.paper_extracted?.location || 'Unknown'}</strong></div>
+                                        <div className="truncate">Portal Site: <span className="text-slate-300">{doc.portal_record?.work_description?.substring(0, 35)}...</span></div>
+                                        {hasLocationMismatch && (
+                                          <div className="text-rose-400 font-semibold pt-0.5 text-[10px]">
+                                            Site substitution alert: Work certified at completely different site!
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                  </div>
                                 </div>
                               </div>
 
-                              {/* Task 3: Vendor / Subcontractor Detection */}
-                              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
-                                <div className="flex items-center justify-between font-semibold">
-                                  <span className="text-slate-300 flex items-center gap-1">
-                                    <Users className="w-3.5 h-3.5 text-purple-400" />
-                                    Task 3: Contractor Trace
+                              {/* Statutory Alerts from Findings */}
+                              {doc.findings?.length > 0 && (
+                                <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                                  <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-semibold">
+                                    Automated Statutory Violations Detected by Neural OCR:
                                   </span>
-                                  {doc.paper_extracted?.vendor_name ? (
-                                    <span className="text-[10px] text-amber-400 font-mono font-bold">BENEFICIARY UNCOVERED</span>
-                                  ) : (
-                                    <span className="text-[10px] text-slate-400 font-mono">STANDARD</span>
-                                  )}
+                                  {doc.findings.map((f, fIdx) => (
+                                    <div key={fIdx} className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2">
+                                      <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                                      <div>
+                                        <strong className="text-rose-300 font-mono text-[11px]">[{f.code}] {f.title}:</strong>
+                                        <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">{f.detail}</p>
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
-                                <div className="text-[11px] text-slate-400 space-y-0.5">
-                                  <div>Paper Contractor: <strong className="text-amber-300">{doc.paper_extracted?.vendor_name || 'N/A'}</strong></div>
-                                  <div>Bank A/C: <span className="font-mono text-emerald-300">{maskAccountNo(doc.paper_extracted?.account_no)}</span> <span className="px-1 py-0.2 rounded text-[9px] bg-slate-800 text-slate-400 font-mono border border-slate-700">DPDP MASKED</span> | UTR: <span className="font-mono text-cyan-300">{doc.paper_extracted?.utr_number || 'N/A'}</span></div>
-                                  <div className="text-[10px] text-slate-500">Portal listed generic IDA authority; physical invoice revealed private vendor.</div>
-                                </div>
-                              </div>
-
-                              {/* Task 4: Location & GPS Watermark */}
-                              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
-                                <div className="flex items-center justify-between font-semibold">
-                                  <span className="text-slate-300 flex items-center gap-1">
-                                    <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                                    Task 4: Ground Location
-                                  </span>
-                                  {doc.findings?.some(f => f.code === 'LOCATION_MISMATCH') ? (
-                                    <span className="text-[10px] text-rose-400 font-mono font-bold">CONFLICT DETECTED</span>
-                                  ) : (
-                                    <span className="text-[10px] text-emerald-400 font-mono">VERIFIED</span>
-                                  )}
-                                </div>
-                                <div className="text-[11px] text-slate-400 space-y-0.5">
-                                  <div>Certificate Site: <strong className="text-amber-300">{doc.paper_extracted?.location || 'Unknown'}</strong></div>
-                                  <div className="truncate">Portal Site: <span className="text-slate-300">{doc.portal_record?.work_description?.substring(0, 40)}...</span></div>
-                                  {doc.findings?.some(f => f.code === 'LOCATION_MISMATCH') && (
-                                    <div className="text-rose-400 font-semibold pt-0.5">Potential site substitution fraud.</div>
-                                  )}
-                                </div>
-                              </div>
+                              )}
                             </div>
-
-                            {/* Statutory Alerts from Findings */}
-                            {doc.findings?.length > 0 && (
-                              <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                                <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-semibold">
-                                  Automated Statutory Violations Detected by Neural OCR:
-                                </span>
-                                {doc.findings.map((f, fIdx) => (
-                                  <div key={fIdx} className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2">
-                                    <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                      <strong className="text-rose-300 font-mono text-[11px]">[{f.code}] {f.title}:</strong>
-                                      <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">{f.detail}</p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : showSampleOcr ? (
                       /* Interactive Live Sample for Work #62689 */
                       <div className="p-4 rounded-xl bg-slate-950 border border-amber-500/30 space-y-4">
-                        <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-3">
                           <span className="font-mono text-amber-300 font-semibold">Mahesh_Sharma_62689_Document_47.pdf (Active Live Scan)</span>
                           <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono border border-amber-500/40">
                             Annexure - VI / Completion Certificate
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          {/* Task 1 */}
-                          <div className="p-3 rounded-lg bg-slate-900 border border-rose-500/40 space-y-1.5">
-                            <div className="flex items-center justify-between font-semibold">
-                              <span className="text-slate-300 flex items-center gap-1">
-                                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                                Task 1: Money Mismatch (Portal vs Paper)
-                              </span>
-                              <span className="text-[10px] text-rose-400 font-mono font-bold">MISMATCH FLAGGED</span>
-                            </div>
-                            <div className="text-[11px] text-slate-300 space-y-1">
-                              <div>Portal Claimed Disbursed: <strong className="text-white">₹9,95,046.00</strong></div>
-                              <div>Physical Paper Approved: <strong className="text-amber-400 font-mono">₹7,28,528.00</strong></div>
-                              <div className="text-rose-400 font-bold">Unaccounted Retained Balance: ₹2,66,518.00</div>
-                            </div>
-                          </div>
-
-                          {/* Task 2 */}
-                          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
-                            <div className="flex items-center justify-between font-semibold">
-                              <span className="text-slate-300 flex items-center gap-1">
-                                <ShieldAlert className="w-3.5 h-3.5 text-sky-400" />
-                                Task 2: Cross-Scheme Origin
-                              </span>
-                              <span className="text-[10px] text-emerald-400 font-mono">MPLADS VERIFIED</span>
-                            </div>
-                            <div className="text-[11px] text-slate-300">
-                              <div>Header: <strong className="text-white">Central MPLADS (Annexure-VI)</strong></div>
-                              <div className="text-[10px] text-slate-400 mt-1">Cross-check against State MLA (KLLAD / Vidhayak Nidhi) passed.</div>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                          {/* Sample Image */}
+                          <div className="lg:col-span-5">
+                            <div 
+                              className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900 cursor-pointer"
+                              onClick={() => setPreviewImage({ 
+                                src: `${API_BASE}/images/extracted/Mahesh_Sharma_62689_Document_47_p1_rendered_300dpi.png`, 
+                                title: 'Mahesh_Sharma_62689_Document_47.pdf (300 DPI Neural Scan)' 
+                              })}
+                            >
+                              <img
+                                src={`${API_BASE}/images/extracted/Mahesh_Sharma_62689_Document_47_p1_rendered_300dpi.png`}
+                                alt="Work 62689 Sample Scan"
+                                className="w-full h-auto max-h-72 object-contain rounded group-hover:scale-105 transition-transform"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                              <div className="absolute inset-0 bg-cyan-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="px-3 py-1.5 rounded-lg bg-black/80 text-cyan-300 text-xs font-semibold backdrop-blur-sm border border-cyan-500/40 flex items-center gap-1.5">
+                                  <Maximize2 className="w-3.5 h-3.5" />
+                                  Inspect Full Resolution
+                                </span>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Task 3 */}
-                          <div className="p-3 rounded-lg bg-slate-900 border border-purple-500/40 space-y-1.5">
-                            <div className="flex items-center justify-between font-semibold">
-                              <span className="text-slate-300 flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5 text-purple-400" />
-                                Task 3: Hidden Contractor Disclosure
-                              </span>
-                              <span className="text-[10px] text-purple-400 font-mono font-bold">PRIVATE BENEFICIARY</span>
-                            </div>
-                            <div className="text-[11px] text-slate-300 space-y-1">
-                              <div>Extracted Vendor: <strong className="text-purple-300">V914400022814 Siddhi Associates</strong></div>
-                              <div>Bank A/C: <span className="font-mono text-emerald-300">XXXX-XXXX-7586</span> <span className="px-1 py-0.2 rounded text-[9px] bg-slate-800 text-slate-400 font-mono border border-slate-700">DPDP MASKED</span> | UTR: <span className="font-mono text-cyan-300">0150129426</span></div>
-                              <div className="text-[10px] text-slate-400">Portal concealed vendor under generic District Magistrate entry.</div>
-                            </div>
-                          </div>
+                          {/* Sample Matrix */}
+                          <div className="lg:col-span-7 space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                              {/* Task 1 */}
+                              <div className="p-3 rounded-lg bg-slate-900 border border-rose-500/40 space-y-1.5">
+                                <div className="flex items-center justify-between font-semibold">
+                                  <span className="text-slate-300 flex items-center gap-1">
+                                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                                    Task 1: Financial Gap
+                                  </span>
+                                  <span className="text-[10px] text-rose-400 font-mono font-bold">MISMATCH FLAGGED</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300 space-y-1">
+                                  <div>Portal Disbursed: <strong className="text-white">₹9,95,046.00</strong></div>
+                                  <div>Physical Paper Approved: <strong className="text-amber-400 font-mono">₹7,28,528.00</strong></div>
+                                  <div className="text-rose-400 font-bold">Unaccounted Retained Balance: +₹2,66,518.00</div>
+                                </div>
+                              </div>
 
-                          {/* Task 4 */}
-                          <div className="p-3 rounded-lg bg-slate-900 border border-rose-500/40 space-y-1.5">
-                            <div className="flex items-center justify-between font-semibold">
-                              <span className="text-slate-300 flex items-center gap-1">
-                                <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                                Task 4: Location Integrity
-                              </span>
-                              <span className="text-[10px] text-rose-400 font-mono font-bold">LOCATION CONFLICT</span>
-                            </div>
-                            <div className="text-[11px] text-slate-300 space-y-1">
-                              <div>Paper Certificate Site: <strong className="text-amber-400 font-mono">Bhabokara</strong></div>
-                              <div>Portal Claimed Site: <strong className="text-white">Gram Bhogpur (80m drain)</strong></div>
-                              <div className="text-rose-400 font-semibold text-[10px]">Site substitution alert: Work certified at completely different village!</div>
+                              {/* Task 2 */}
+                              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+                                <div className="flex items-center justify-between font-semibold">
+                                  <span className="text-slate-300 flex items-center gap-1">
+                                    <ShieldAlert className="w-3.5 h-3.5 text-sky-400" />
+                                    Task 2: Scheme Origin
+                                  </span>
+                                  <span className="text-[10px] text-emerald-400 font-mono">MPLADS VERIFIED</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300">
+                                  <div>Header: <strong className="text-white">Central MPLADS (Annexure-VI)</strong></div>
+                                  <div className="text-[10px] text-slate-400 mt-1">Cross-check against State MLA passed.</div>
+                                </div>
+                              </div>
+
+                              {/* Task 3 */}
+                              <div className="p-3 rounded-lg bg-slate-900 border border-purple-500/40 space-y-1.5">
+                                <div className="flex items-center justify-between font-semibold">
+                                  <span className="text-slate-300 flex items-center gap-1">
+                                    <Users className="w-3.5 h-3.5 text-purple-400" />
+                                    Task 3: Contractor Disclosure
+                                  </span>
+                                  <span className="text-[10px] text-purple-400 font-mono font-bold">PRIVATE BENEFICIARY</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300 space-y-1">
+                                  <div>Extracted Vendor: <strong className="text-purple-300">V914400022814 Siddhi Associates</strong></div>
+                                  <div>Bank A/C: <span className="font-mono text-emerald-300">XXXX-XXXX-7586</span> <span className="px-1 py-0.2 rounded text-[9px] bg-slate-800 text-slate-400 font-mono border border-slate-700">DPDP MASKED</span></div>
+                                  <div>UTR: <span className="font-mono text-cyan-300">0150129426</span></div>
+                                </div>
+                              </div>
+
+                              {/* Task 4 */}
+                              <div className="p-3 rounded-lg bg-slate-900 border border-rose-500/40 space-y-1.5">
+                                <div className="flex items-center justify-between font-semibold">
+                                  <span className="text-slate-300 flex items-center gap-1">
+                                    <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                                    Task 4: Location Integrity
+                                  </span>
+                                  <span className="text-[10px] text-rose-400 font-mono font-bold">LOCATION CONFLICT</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300 space-y-1">
+                                  <div>Paper Certificate Site: <strong className="text-amber-400 font-mono">Bhabokara</strong></div>
+                                  <div>Portal Claimed Site: <strong className="text-white">Gram Bhogpur (80m drain)</strong></div>
+                                  <div className="text-rose-400 font-semibold text-[10px]">Site substitution alert: Work certified at completely different village!</div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -819,56 +1044,129 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
                     )}
 
                     {/* Action Selector */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <label className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        actionType === 'dismiss'
-                          ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                        actionType === 'TREASURY_HOLD_RECOMMENDED'
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-300 ring-1 ring-amber-500/30'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
                       }`}>
                         <input
                           type="radio"
                           name="actionType"
-                          value="dismiss"
-                          checked={actionType === 'dismiss'}
-                          onChange={() => setActionType('dismiss')}
+                          value="TREASURY_HOLD_RECOMMENDED"
+                          checked={actionType === 'TREASURY_HOLD_RECOMMENDED'}
+                          onChange={() => setActionType('TREASURY_HOLD_RECOMMENDED')}
                           className="sr-only"
                         />
-                        <div className="font-bold text-xs">Dismiss Vigilance Flag</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Verified on ground / false positive</div>
+                        <div className="font-bold text-xs flex items-center justify-between">
+                          <span>🚨 Recommend Treasury Hold</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40">DM Review</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Alert DDO / DM to withhold tranche release pending inquiry</div>
                       </label>
 
                       <label className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        actionType === 'escalate'
-                          ? 'bg-rose-500/10 border-rose-500/50 text-rose-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                        actionType === 'INSPECTION_ORDERED'
+                          ? 'bg-sky-500/10 border-sky-500/50 text-sky-300 ring-1 ring-sky-500/30'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
                       }`}>
                         <input
                           type="radio"
                           name="actionType"
-                          value="escalate"
-                          checked={actionType === 'escalate'}
-                          onChange={() => setActionType('escalate')}
+                          value="INSPECTION_ORDERED"
+                          checked={actionType === 'INSPECTION_ORDERED'}
+                          onChange={() => setActionType('INSPECTION_ORDERED')}
                           className="sr-only"
                         />
-                        <div className="font-bold text-xs">Escalate to State / CAG</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Recommend official inquiry</div>
+                        <div className="font-bold text-xs flex items-center justify-between">
+                          <span>🔍 Order Ground Inspection</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-sky-500/20 text-sky-300 border border-sky-500/40">Field Audit</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Dispatch Junior Engineer to verify physical progress on site</div>
+                      </label>
+
+                      <label className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        actionType === 'FALSE_POSITIVE' || actionType === 'DISMISSED'
+                          ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300 ring-1 ring-emerald-500/30'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="actionType"
+                          value="FALSE_POSITIVE"
+                          checked={actionType === 'FALSE_POSITIVE' || actionType === 'DISMISSED'}
+                          onChange={() => setActionType('FALSE_POSITIVE')}
+                          className="sr-only"
+                        />
+                        <div className="font-bold text-xs flex items-center justify-between">
+                          <span>🛡️ Dismiss as False Positive</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Verified</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Verified on ground; legitimate data entry discrepancy</div>
+                      </label>
+
+                      <label className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        actionType === 'ESCALATED'
+                          ? 'bg-rose-500/10 border-rose-500/50 text-rose-300 ring-1 ring-rose-500/30'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="actionType"
+                          value="ESCALATED"
+                          checked={actionType === 'ESCALATED'}
+                          onChange={() => setActionType('ESCALATED')}
+                          className="sr-only"
+                        />
+                        <div className="font-bold text-xs flex items-center justify-between">
+                          <span>⚖️ Escalate to State / CAG</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40">Statutory Probe</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Recommend formal investigation under GFR 2017 Rule 144</div>
                       </label>
                     </div>
 
                     {/* Written Justification */}
-                    <div>
-                      <div className="flex justify-between items-center text-xs mb-1.5">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-xs">
                         <span className="font-semibold text-slate-300">
                           Mandatory Written Justification (Min 50 Characters)
                         </span>
                         <span className={`font-mono text-xs ${
-                          justification.trim().length >= 50 ? 'text-emerald-400' : 'text-amber-400'
+                          justification.trim().length >= 50 ? 'text-emerald-400 font-bold' : 'text-amber-400'
                         }`}>
                           {justification.trim().length} / 50 characters
                         </span>
                       </div>
+
+                      {/* Quick Template Fill Buttons */}
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[10px] text-slate-500 font-medium">Quick Rationale:</span>
+                        <button
+                          type="button"
+                          onClick={() => setJustification('Formal Treasury Hold Recommended: Discrepancy observed between portal billing and physical progress. Drawing & Disbursing Officer (DDO) advised to halt next tranche release pending SDM inquiry.')}
+                          className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+                        >
+                          Treasury Hold Template
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setJustification('Physical verification conducted under Sub-Divisional Magistrate supervision confirms physical progress matches technical sanction. Flag dismissed as clerical timing discrepancy.')}
+                          className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors"
+                        >
+                          False Positive Template
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setJustification('Independent field inspection ordered. Junior Engineer dispatched to site to audit geotag coordinates and structural measurements against MB records.')}
+                          className="px-2 py-0.5 rounded text-[10px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 transition-colors"
+                        >
+                          Inspection Template
+                        </button>
+                      </div>
+
                       <textarea
-                        rows={4}
+                        rows={3}
                         value={justification}
                         onChange={(e) => setJustification(e.target.value)}
                         placeholder="Provide detailed statutory and ground verification findings explaining this administrative action..."
@@ -917,6 +1215,41 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
         </div>
 
       </div>
+
+      {/* High-Resolution Forensic Image Lightbox Modal */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="relative max-w-5xl w-full max-h-[95vh] flex flex-col bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3.5 bg-slate-950 border-b border-slate-800">
+              <div className="flex items-center space-x-2.5">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-mono font-bold text-white truncate max-w-lg">
+                  {previewImage.title}
+                </span>
+              </div>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-auto max-h-[85vh] flex items-center justify-center bg-slate-950/90">
+              <img
+                src={previewImage.src}
+                alt={previewImage.title}
+                className="max-w-full max-h-[80vh] object-contain rounded border border-slate-800 shadow-2xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

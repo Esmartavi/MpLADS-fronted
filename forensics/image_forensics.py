@@ -21,6 +21,7 @@ import numpy as np
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
+from typing import Optional, Dict, Any, List, Set
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 import imagehash
@@ -68,6 +69,95 @@ ocr_engine = RapidOCR()
 # ── Regex Patterns ─────────────────────────────────────────────────────────────
 GPS_PATTERN_1 = re.compile(r'Lat\s*[:\s]?\s*([0-9]+\.[0-9]+)[^\w]*Long\s*[:\s]?\s*([0-9]+\.[0-9]+)', re.IGNORECASE)
 GPS_PATTERN_2 = re.compile(r'([0-9]+\.[0-9]+)\s*°?\s*[NS][\s,]+([0-9]+\.[0-9]+)\s*°?\s*[EW]', re.IGNORECASE)
+
+# 1. Hindi / Bilingual Camera Banners (GPS Map Camera & Local Apps)
+HINDI_GPS_PATTERN = re.compile(
+    r'(?:अक्षांश|Lat(?:itude)?)[^\d]{0,15}([0-9]{1,2}\.[0-9]{3,8})[^\d]{0,40}(?:देशांतर|Long(?:itude)?)[^\d]{0,15}([0-9]{2,3}\.[0-9]{3,8})',
+    re.IGNORECASE
+)
+
+# 2. Degrees, Minutes, Seconds (DMS) format used by NoteCam / Solocator
+DMS_GPS_PATTERN = re.compile(
+    r'([0-9]{1,2})°\s*([0-9]{1,2})\'\s*([0-9]{1,2}(?:\.[0-9]+)?)\"?\s*([NnSs])[\s,]+([0-9]{2,3})°\s*([0-9]{1,2})\'\s*([0-9]{1,2}(?:\.[0-9]+)?)\"?\s*([EeWw])'
+)
+
+# 3. Clean decimal degrees with N/E markers
+DECIMAL_GPS_PATTERN = re.compile(
+    r'([0-9]{1,2}\.[0-9]{4,8})\s*°?\s*[Nn][\s,]+([0-9]{2,3}\.[0-9]{4,8})\s*°?\s*[Ee]'
+)
+
+def dms_to_dd_calc(deg, minutes, sec, ref):
+    dd = float(deg) + float(minutes)/60.0 + float(sec)/3600.0
+    if str(ref).upper() in ['S', 'W']:
+        dd = -dd
+    return dd
+
+def extract_gps_from_ocr_text(text: str) -> Optional[dict]:
+    """
+    Extracts GPS coordinates from scanned certificate text overlays,
+    supporting Hindi camera app banners, DMS formats, and multi-line blocks.
+    """
+    if not text:
+        return None
+
+    # Try Pattern 1: Hindi / Bilingual camera banner
+    m1 = HINDI_GPS_PATTERN.search(text)
+    if m1:
+        try:
+            lat = float(m1.group(1))
+            lon = float(m1.group(2))
+            if 6.0 <= lat <= 38.0 and 68.0 <= lon <= 98.0:
+                return {"latitude": round(lat, 6), "longitude": round(lon, 6), "source": "Camera Watermark (Hindi/Bilingual)"}
+        except Exception:
+            pass
+
+    # Try Pattern 2: DMS (Degrees, Minutes, Seconds) e.g. 21°59'14.5"N 82°33'40.2"E
+    m2 = DMS_GPS_PATTERN.search(text)
+    if m2:
+        try:
+            lat = dms_to_dd_calc(m2.group(1), m2.group(2), m2.group(3), m2.group(4))
+            lon = dms_to_dd_calc(m2.group(5), m2.group(6), m2.group(7), m2.group(8))
+            if 6.0 <= lat <= 38.0 and 68.0 <= lon <= 98.0:
+                return {"latitude": round(lat, 6), "longitude": round(lon, 6), "source": "Camera Watermark (NoteCam DMS)"}
+        except Exception:
+            pass
+
+    # Try Pattern 3: Standard decimal degrees with N/E markers
+    m3 = DECIMAL_GPS_PATTERN.search(text)
+    if m3:
+        try:
+            lat = float(m3.group(1))
+            lon = float(m3.group(2))
+            if 6.0 <= lat <= 38.0 and 68.0 <= lon <= 98.0:
+                return {"latitude": round(lat, 6), "longitude": round(lon, 6), "source": "Camera Watermark (Decimal Degrees)"}
+        except Exception:
+            pass
+
+    # Try Pattern 4: Legacy patterns
+    m_legacy = GPS_PATTERN_1.search(text) or GPS_PATTERN_2.search(text)
+    if m_legacy:
+        try:
+            lat = float(m_legacy.group(1))
+            lon = float(m_legacy.group(2))
+            if 6.0 <= lat <= 38.0 and 68.0 <= lon <= 98.0:
+                return {"latitude": round(lat, 6), "longitude": round(lon, 6), "source": "Watermark Overlay"}
+        except Exception:
+            pass
+
+    # Try Pattern 5: Multi-line independent Latitude and Longitude blocks
+    p_lat = re.search(r'(?:Latitude|Lat|अक्षांश)\s*[:\s]?\s*([0-9]{1,2}\.[0-9]{3,8})', text, re.IGNORECASE)
+    p_lon = re.search(r'(?:Longitude|Long|Lon|देशांतर)\s*[:\s]?\s*([0-9]{2,3}\.[0-9]{3,8})', text, re.IGNORECASE)
+    if p_lat and p_lon:
+        try:
+            lat = float(p_lat.group(1))
+            lon = float(p_lon.group(1))
+            if 6.0 <= lat <= 38.0 and 68.0 <= lon <= 98.0:
+                return {"latitude": round(lat, 6), "longitude": round(lon, 6), "source": "Camera Watermark (Multi-line)"}
+        except Exception:
+            pass
+
+    return None
+
 AMOUNT_PATTERN = re.compile(r'(?:Rs\.?|₹|INR)\s*([0-9,]+(?:\.[0-9]{2})?)', re.IGNORECASE)
 LAKH_PATTERN = re.compile(r'([0-9,]+(?:\.[0-9]+)?)\s*(?:lakhs?|Lakhs?|लाख)', re.IGNORECASE)
 UTR_PATTERN = re.compile(r'UTR\s*(?:No\.?)?[^\d]{0,15}([A-Za-z0-9]{8,20})', re.IGNORECASE)
@@ -251,14 +341,8 @@ def parse_entities_from_ocr(lines: list[str]) -> dict:
     if pay_d_m:
         payment_date = pay_d_m.group(1)
 
-    # 4. GPS Watermarks (Task 4: Reading GPS Camera Overlays)
-    gps_m1 = GPS_PATTERN_1.search(full_text)
-    if gps_m1:
-        gps_coords = {"latitude": float(gps_m1.group(1)), "longitude": float(gps_m1.group(2)), "source": "Watermark Overlay"}
-    else:
-        gps_m2 = GPS_PATTERN_2.search(full_text)
-        if gps_m2:
-            gps_coords = {"latitude": float(gps_m2.group(1)), "longitude": float(gps_m2.group(2)), "source": "Watermark Overlay"}
+    # 4. GPS Watermarks (Task 4: Reading GPS Camera Overlays & Hindi Banners)
+    gps_coords = extract_gps_from_ocr_text(full_text)
 
     # 5. Amounts (Task 1: Money Mismatches)
     lakh_matches = LAKH_PATTERN.findall(full_text)
@@ -463,13 +547,15 @@ def resolve_file_metadata(filename: str, meta_by_wid: dict) -> dict:
         "completion_date": ""
     }
 
-def run_image_forensics():
+def run_image_forensics(input_dir: Optional[str] = None, output_csv: Optional[str] = None):
+    target_dir = input_dir if input_dir and os.path.isdir(input_dir) else IMAGES_DIR
     print("=" * 70)
     print("  AI DOCUMENT & IMAGE FORENSICS PIPELINE — MPLADS 2026")
+    print(f"  Target Folder: {os.path.abspath(target_dir)}")
     print("=" * 70)
 
-    if not os.path.isdir(IMAGES_DIR):
-        print(f"ERROR: images folder not found at {IMAGES_DIR}")
+    if not os.path.isdir(target_dir):
+        print(f"ERROR: folder not found at {target_dir}")
         return
 
     # 0. Load Work & Uploader Attribution Registry
@@ -478,7 +564,7 @@ def run_image_forensics():
     print(f"  -> Successfully indexed metadata for {len(meta_by_wid):,} projects.")
 
     # 1. Discover all files (PDFs + direct Images)
-    all_files = os.listdir(IMAGES_DIR)
+    all_files = os.listdir(target_dir)
     pdf_files = sorted([f for f in all_files if f.lower().endswith('.pdf')])
     direct_img_files = sorted([f for f in all_files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))])
 
@@ -491,7 +577,7 @@ def run_image_forensics():
     
     print("\n🔍 Extracting & Indexing Embedded High-Resolution Evidence Photos...")
     for pdf_name in pdf_files:
-        pdf_path = os.path.join(IMAGES_DIR, pdf_name)
+        pdf_path = os.path.join(target_dir, pdf_name)
         pdf_meta = resolve_file_metadata(pdf_name, meta_by_wid)
         try:
             doc = pymupdf.open(pdf_path)
@@ -549,7 +635,7 @@ def run_image_forensics():
 
     # Add standalone images
     for img_name in direct_img_files:
-        img_path = os.path.join(IMAGES_DIR, img_name)
+        img_path = os.path.join(target_dir, img_name)
         img_meta = resolve_file_metadata(img_name, meta_by_wid)
         try:
             pil_img = Image.open(img_path)
@@ -697,7 +783,11 @@ def run_image_forensics():
     print(f"  -> Queued {len(images_to_ocr)} high-resolution document pages for Neural OCR.")
 
     for pdf_source, img_filename, doc_type in images_to_ocr:
-        img_path = os.path.join(EXTRACTED_DIR, img_filename) if os.path.exists(os.path.join(EXTRACTED_DIR, img_filename)) else os.path.join(IMAGES_DIR, img_filename)
+        img_path = (
+            os.path.join(EXTRACTED_DIR, img_filename) if os.path.exists(os.path.join(EXTRACTED_DIR, img_filename))
+            else (os.path.join(target_dir, img_filename) if os.path.exists(os.path.join(target_dir, img_filename))
+            else os.path.join(IMAGES_DIR, img_filename))
+        )
         if not os.path.exists(img_path):
             continue
             
@@ -984,6 +1074,40 @@ def run_image_forensics():
     with open(OUT_MISSING, "w", encoding="utf-8") as f:
         json.dump(missing_photo_works, f, indent=2, ensure_ascii=False)
 
+    # 7. Export GPS & Vendor Master CSV
+    csv_rows = []
+    for d in document_verdicts:
+        p_rec = d.get("portal_record", {})
+        paper = d.get("paper_extracted", {})
+        gps = paper.get("gps_coordinates") or d.get("gps_coordinates") or {}
+        csv_rows.append({
+            "work_id": p_rec.get("work_id", ""),
+            "canonical_work_id": p_rec.get("canonical_work_id", ""),
+            "mp_name": p_rec.get("mp_name", d.get("mp_name", "")),
+            "state": p_rec.get("state", ""),
+            "constituency": p_rec.get("constituency", ""),
+            "disbursed_amount": p_rec.get("disbursed_amount", 0.0),
+            "paper_approved_amount": paper.get("approved_amount", ""),
+            "vendor_name": paper.get("vendor_name", ""),
+            "vendor_code": paper.get("vendor_code", ""),
+            "bank_account_no": paper.get("account_no", ""),
+            "utr_number": paper.get("utr_number", ""),
+            "latitude": gps.get("latitude", ""),
+            "longitude": gps.get("longitude", ""),
+            "gps_source": gps.get("source", ""),
+            "scheme_type": paper.get("scheme_type", d.get("scheme_type", "")),
+            "has_cross_scheme_fraud": d.get("has_cross_scheme_fraud", False),
+            "pdf_file": d.get("pdf_file", "")
+        })
+
+    target_csv = output_csv or os.path.join(ROOT_DIR, "data", "processed", "works_with_gps_and_vendors.csv")
+    try:
+        os.makedirs(os.path.dirname(target_csv), exist_ok=True)
+        pd.DataFrame(csv_rows).to_csv(target_csv, index=False, encoding="utf-8-sig")
+        print(f"  Exported Master CSV           : {target_csv}")
+    except Exception as e_csv:
+        print(f"  Note on CSV export: {e_csv}")
+
     print("\n" + "=" * 70)
     print("  ✅ FORENSICS ENGINE REPORT SUMMARY")
     print("=" * 70)
@@ -999,5 +1123,13 @@ def run_image_forensics():
     print("=" * 70)
     print(f"Results saved to: {OUT_SUMMARY}")
 
+    return summary_data
+
+
 if __name__ == "__main__":
-    run_image_forensics()
+    import argparse
+    parser = argparse.ArgumentParser(description="MPLADS AI Document & Image Forensics Pipeline")
+    parser.add_argument("--input-dir", type=str, default=None, help="Directory containing PDFs to analyze")
+    parser.add_argument("--output-csv", type=str, default=None, help="Path to export extracted GPS & vendor CSV")
+    args = parser.parse_args()
+    run_image_forensics(input_dir=args.input_dir, output_csv=args.output_csv)

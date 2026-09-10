@@ -66,7 +66,7 @@ A strict judge checks domain depth in the first 60 seconds: do you understand ho
 | **Explainability** | **High** | Black-box single anomaly score (e.g. 0.87). Falsely accusing an MP is a legal liability. | Plain-English statutory reason for every flag + SHAP-style multi-factor attribution. |
 | **Data Realism** | **High** | Claiming real data is impossible and relying 100% on toy synthetic data. | **Hybrid Data Strategy:** 98,649 real historical MoSPI records + controlled statutory violation benchmarks. |
 | **False-Positive Cost** | **High** | Auto-flagging works without a human recourse mechanism. | Human-in-the-loop Kanban triage queue (`Open` ➔ `Review` ➔ `False Positive` ➔ `Escalated`). |
-| **Novelty Beyond Dashboards** | **High** | Generic charts (MoSPI already has a monitoring dashboard). | **300 DPI Document OCR**, **Cross-Scheme Double-Dipping**, **pHash Vault**, and **Treasury Kill-Switch**. |
+| **Novelty Beyond Dashboards** | **High** | Generic charts (MoSPI already has a monitoring dashboard). | **300 DPI Document OCR**, **Cross-Scheme Double-Dipping**, **pHash Vault**, and **DM Treasury Hold Warrant Engine**. |
 | **Scale** | **Medium** | Demo runs on 500 rows only. | Production-grade Supabase PostgreSQL relational schema indexing 98,649 works with sub-20ms queries. |
 
 ---
@@ -139,7 +139,7 @@ Many teams claim: *"We will do live API integration with the central ministry da
   ├── LAYER H: Statutory Legal Enforcement Suite
   │    ├── 📄 1-Click Official CVC / CAG Audit Dossier (PDF Export with statutory exhibits)
   │    ├── ⚖️ Automated GFR 2017 Rule 144 Show-Cause Notice ready for District Magistrate signature
-  │    └── 🚨 Automated Treasury Kill-Switch (halting pending tranches via PFMS)
+  │    └── 🚨 Cryptographic Treasury Hold Recommendation (Mandatory 50-Char Justification & SHA-256 Audit Seal for DM Review)
   │
   └── LAYER I: Security & Cryptographic Immutability
        ├── Role-Based Access Control (RBAC) reflecting administrative hierarchy
@@ -166,8 +166,10 @@ Many teams claim: *"We will do live API integration with the central ministry da
 * **The Scam:** Corrupt officials split a large contract into ₹49.50L, ₹48.90L, and ₹49.80L tranches to bypass the mandatory **₹50 Lakh open e-tender and technical sanction threshold**.
 * **Our Solution:** Chi-Square goodness-of-fit testing on invoice digit distributions surfaces human manipulation and split-tendering clusters.
 
-### 5. Automated CVC / CAG Show-Cause Notice & Treasury Kill-Switch
-* **The Actionability:** Solves the judge's #1 complaint (*"AI found fraud, but who acts on it?"*). With one click, generates a legally binding legal notice under **GFR 2017 Rule 144** and **Prevention of Corruption Act Section 13(1)(d)**, and issues an emergency Treasury Kill-Switch to freeze Tranche 2 before money leaves the bank.
+### 5. Statutory Show-Cause Notice & DM Treasury Hold Warrant Engine
+* **The Actionability & Governance:** Solves the judge's #1 complaint (*"AI found fraud, but who acts on it, and how do you protect against false positives?"*). Bharat-Drishti strictly enforces **Human-in-the-Loop Administrative Natural Justice (*Audi Alteram Partem*)**:
+  * **Draft GFR 2017 Rule 144 Show-Cause Notice:** Pre-populates all statutory forensic evidence for the District Magistrate's formal review before any coercive sanction is issued.
+  * **Cryptographic Treasury Hold Recommendation (`TREASURY_HOLD_RECOMMENDED`):** Unlike reckless "autonomous kill-switches" that unlawfully freeze public works on an algorithm's guess, Bharat-Drishti issues a formal hold warrant alerting the Drawing & Disbursing Officer (DDO). It mandates a minimum 50-character written administrative justification, permanently locked into an immutable SHA-256 Merkle chain to prevent post-facto tampering.
 
 ---
 
@@ -234,7 +236,7 @@ Many teams claim: *"We will do live API integration with the central ministry da
        └── Section E: Statutory Enforcement Suite:
             ├── 📄 [Download Official CVC/CAG PDF Audit Dossier]
             ├── ⚖️ [Generate GFR Rule 144 Legal Show-Cause Notice]
-            └── 🚨 [Trigger Treasury Kill-Switch (Freeze Tranche 2)]
+            └── 🚨 [Issue Treasury Hold Recommendation (SHA-256 DM Seal)]
 ```
 
 ---
@@ -274,4 +276,4 @@ Before presenting, evaluate the solution against the exact scoring rubric used b
 * **Minute 4: Live Case Walkthrough (Gaya Road Case) (90 Seconds):**  
   *Open Work #62689 in the War Room. Show the ₹49.5L split tender flag, the contractor syndicate link, the ₹2.66L paper discrepancy, and the Gemini executive briefing.*
 * **Minute 5: Actionability & Legal Enforcement (30 Seconds):**  
-  *"Answering the judge's question: 'What happens after AI finds fraud?' With one click, the system generates a **legally binding Show-Cause Notice under GFR 2017 Rule 144** ready for the District Magistrate, and executes an automated **Treasury Kill-Switch** to freeze Tranche 2 before the money leaves the bank."*
+  *"Answering the judge's question: 'What happens after AI finds fraud?' We respect administrative law: an AI cannot unilaterally freeze bank accounts without natural justice. With one click, Bharat-Drishti generates a **draft Show-Cause Notice under GFR 2017 Rule 144** for the District Magistrate, and logs a **formal Treasury Hold Recommendation (`TREASURY_HOLD_RECOMMENDED`)** with a mandatory 50-character written justification sealed by an immutable SHA-256 cryptographic chain, alerting the DDO to halt tranche disbursement."*

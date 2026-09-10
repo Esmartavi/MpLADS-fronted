@@ -241,6 +241,11 @@ export const api = {
     return handleResponse(res);
   },
 
+  async getMapGpsPoints() {
+    const res = await fetch(`${API_BASE}/api/map/gps-points`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
   // Dropdown Metadata Filters
   async getFilterOptions() {
     const res = await fetch(`${API_BASE}/api/filters`, { headers: getHeaders() });
@@ -279,4 +284,42 @@ export const api = {
     const res = await fetch(`${API_BASE}/api/image-forensics`, { headers: getHeaders() });
     return handleResponse(res);
   },
+
+  async getForensicsResults() {
+    const res = await fetch(`${API_BASE}/api/image-forensics/results`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
+  async getOcrFlags() {
+    const res = await fetch(`${API_BASE}/api/image-forensics/ocr-flags`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
+  async getForensicsDuplicates() {
+    const res = await fetch(`${API_BASE}/api/image-forensics/duplicates`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
+  async triggerImageForensics() {
+    const res = await fetch(`${API_BASE}/api/image-forensics/run`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  // Model Validation & Triangulation Metrics
+  async getModelValidation() {
+    const res = await fetch(`${API_BASE}/api/model-validation`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
+  async runModelValidation() {
+    const res = await fetch(`${API_BASE}/api/model-validation/run`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
 };
+

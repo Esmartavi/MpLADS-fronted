@@ -79,6 +79,14 @@ export default function AuditLedgerView({ onSelectWork }) {
 
   const getActionBadge = (action) => {
     const act = (action || '').toUpperCase();
+    if (act === 'TREASURY_HOLD_RECOMMENDED' || act === 'HOLD') {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />
+          TREASURY HOLD WARRANT (DM)
+        </span>
+      );
+    }
     if (act === 'ESCALATED') {
       return (
         <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40">
@@ -88,14 +96,14 @@ export default function AuditLedgerView({ onSelectWork }) {
     }
     if (act === 'INSPECTION_ORDERED') {
       return (
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40">
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-sky-500/20 text-sky-300 border border-sky-500/40">
           INSPECTION ORDERED
         </span>
       );
     }
     if (act === 'DISMISSED' || act === 'FALSE_POSITIVE') {
       return (
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
           FLAG DISMISSED
         </span>
       );
@@ -153,7 +161,7 @@ export default function AuditLedgerView({ onSelectWork }) {
         </div>
 
         <div className="flex items-center space-x-1.5 text-xs w-full sm:w-auto overflow-x-auto">
-          {['all', 'ESCALATED', 'INSPECTION_ORDERED', 'DISMISSED'].map((act) => (
+          {['all', 'TREASURY_HOLD_RECOMMENDED', 'INSPECTION_ORDERED', 'ESCALATED', 'DISMISSED'].map((act) => (
             <button
               key={act}
               onClick={() => setActionFilter(act)}
@@ -163,7 +171,7 @@ export default function AuditLedgerView({ onSelectWork }) {
                   : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
               }`}
             >
-              {act === 'all' ? 'All Actions' : act.replace('_', ' ')}
+              {act === 'all' ? 'All Actions' : act === 'TREASURY_HOLD_RECOMMENDED' ? '🚨 Treasury Hold' : act.replace('_', ' ')}
             </button>
           ))}
         </div>

@@ -365,6 +365,9 @@ To prevent severe false positives, maintain statutory defensibility before minis
 
 ---
 
+
+
+---
 ## 🚀 STEP 6: FASTAPI BACKEND & AI GOVERNANCE SERVICES
 
 ### 6.1 Backend API Server & Role-Based Access Control (RBAC)
@@ -387,9 +390,6 @@ To prevent severe false positives, maintain statutory defensibility before minis
 
 ### 6.4 Tamper-Evident SHA-256 Hash Chain Audit Log
 * Every risk score update, inspector comment, or treasury hold action is appended to `audit_events_ledger` with an SHA-256 hash chained sequentially to the previous event, ensuring internal tamper-evident provenance.
-
----
-
 ## 🖥️ STEP 7: EXECUTIVE WAR ROOM FRONTEND
 
 ### 7.1 Tech Stack

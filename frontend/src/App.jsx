@@ -9,6 +9,9 @@ import VendorNetworkView from './components/VendorNetworkView';
 import GeoRiskMapView from './components/GeoRiskMapView';
 import AuditLedgerView from './components/AuditLedgerView';
 import SecretaryBriefingModal from './components/SecretaryBriefingModal';
+import OcrLabView from './components/OcrLabView';
+import PHashViewer from './components/PHashViewer';
+import ModelValidationView from './components/ModelValidationView';
 import { api } from './services/api';
 import { 
   ShieldAlert, 
@@ -19,7 +22,11 @@ import {
   AlertTriangle,
   ArrowRight,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Building2,
+  Landmark,
+  MapPin,
+  UserCheck
 } from 'lucide-react';
 
 export default function App() {
@@ -94,6 +101,73 @@ export default function App() {
         setActiveTab={setActiveTab}
       />
 
+      {/* Persistent Active Persona Scope Banner */}
+      <div className="bg-slate-900/95 border-b border-slate-800/90 px-4 sm:px-6 lg:px-8 py-2.5 backdrop-blur-md shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-3">
+            <div className={`p-2 rounded-xl border ${
+              activeRole === 'ministry' 
+                ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                : activeRole === 'state'
+                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-sm shadow-amber-500/20'
+                  : activeRole === 'district'
+                    ? 'bg-purple-500/10 border-purple-500/40 text-purple-400 shadow-sm shadow-purple-500/20'
+                    : 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-sm shadow-emerald-500/20'
+            }`}>
+              {activeRole === 'ministry' && <Building2 className="w-4 h-4" />}
+              {activeRole === 'state' && <Landmark className="w-4 h-4" />}
+              {activeRole === 'district' && <MapPin className="w-4 h-4" />}
+              {activeRole === 'mp' && <UserCheck className="w-4 h-4" />}
+            </div>
+            
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                  Active Persona Scope
+                </span>
+                <span className="font-bold text-white text-xs">
+                  {activeRole === 'ministry' && 'MoSPI Central Ministry Official — National Oversight Directorate'}
+                  {activeRole === 'state' && 'State Nodal Authority — Uttar Pradesh Directorate'}
+                  {activeRole === 'district' && 'District Authority — Pilibhit Jurisdiction (DM Office)'}
+                  {activeRole === 'mp' && 'Hon\'ble Member of Parliament — Shri Javed Ali Khan (Sambhal, UP)'}
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
+                <span>
+                  {activeRole === 'ministry' && 'All 36 States & Union Territories // 98,649 Works // 15,690 Critical Flags'}
+                  {activeRole === 'state' && 'State Jurisdiction: Uttar Pradesh (75 Districts) // 19,892 Works Monitored'}
+                  {activeRole === 'district' && 'District Jurisdiction: Pilibhit, UP // 293 Works Monitored'}
+                  {activeRole === 'mp' && 'Parliamentary Constituency Scope // 178 Works Monitored // 14 Critical Flags'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Persona Switcher Shortcuts */}
+          <div className="flex items-center gap-1.5 self-start md:self-auto font-mono text-[11px]">
+            <span className="text-slate-500 mr-1 text-[10px] uppercase">Simulate Role:</span>
+            {[
+              { id: 'ministry', label: 'Ministry' },
+              { id: 'state', label: 'UP State' },
+              { id: 'district', label: 'Pilibhit' },
+              { id: 'mp', label: 'MP Scope' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handleRoleChange(p.id)}
+                className={`px-2.5 py-1 rounded-md text-[11px] transition-all font-medium border ${
+                  activeRole === p.id
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/60 font-bold shadow-sm shadow-cyan-500/20'
+                    : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200 hover:bg-slate-700/80'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Main War Room Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
@@ -117,20 +191,30 @@ export default function App() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="font-mono text-slate-300">
-                  NATIONAL AUDIT ACTIVE: <strong>98,649 WORKS MONITORED</strong>
+                  {activeRole === 'ministry' && <>NATIONAL AUDIT ACTIVE: <strong>98,649 WORKS MONITORED</strong></>}
+                  {activeRole === 'state' && <>STATE AUDIT ACTIVE: <strong>19,892 WORKS IN UTTAR PRADESH</strong></>}
+                  {activeRole === 'district' && <>DISTRICT AUDIT ACTIVE: <strong>293 WORKS IN PILIBHIT</strong></>}
+                  {activeRole === 'mp' && <>CONSTITUENCY AUDIT ACTIVE: <strong>178 WORKS FOR SHRI JAVED ALI KHAN</strong></>}
                 </span>
               </div>
               <div className="hidden sm:flex items-center space-x-4 text-slate-400 font-mono text-[11px]">
-                <span>MODELS: ISOLATION FOREST + BENFORD's LAW + PERCEPTUAL HASH</span>
+                <button
+                  onClick={() => setActiveTab('validation')}
+                  className="px-2.5 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>ACCURACY VALIDATED: 100% STATUTORY / 83.7% ML</span>
+                  <ChevronRight className="w-3 h-3 text-emerald-400" />
+                </button>
                 <span className="text-cyan-400">FASTAPI v2.2</span>
               </div>
             </div>
 
             {/* Executive KPIs Grid */}
-            <ExecutiveKpis kpis={kpis} onFilterTier={handleFilterTier} />
+            <ExecutiveKpis key={`kpi-${activeRole}`} kpis={kpis} onFilterTier={handleFilterTier} />
 
             {/* Visual Analytics & Breakdown */}
-            <QuickStatsCharts kpis={kpis} />
+            <QuickStatsCharts key={`stats-${activeRole}`} kpis={kpis} />
 
             {/* Live Flagged Feeds Preview Section */}
             <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
@@ -149,13 +233,18 @@ export default function App() {
                   onClick={() => setActiveTab('alerts')}
                   className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1 self-start sm:self-auto"
                 >
-                  <span>Explore All 98,649 Works</span>
+                  <span>Explore Monitored Works</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {/* Embedded Mini Feed */}
-              <LiveAlertFeed onSelectWork={setSelectedWorkId} initialTier="critical" />
+              <LiveAlertFeed 
+                key={`mini-feed-${activeRole}`} 
+                activeRole={activeRole} 
+                onSelectWork={setSelectedWorkId} 
+                initialTier="critical" 
+              />
             </div>
 
           </div>
@@ -170,7 +259,7 @@ export default function App() {
                   Live Statutory Vigilance & Flagged Schemes Directory
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Search, filter, and inspect forensic dossiers across all parliamentary constituencies in India.
+                  Search, filter, and inspect forensic dossiers across active parliamentary constituencies.
                 </p>
               </div>
               <span className="text-xs font-mono text-cyan-400 px-3 py-1 rounded-lg bg-cyan-950/60 border border-cyan-800">
@@ -178,28 +267,64 @@ export default function App() {
               </span>
             </div>
 
-            <LiveAlertFeed onSelectWork={setSelectedWorkId} initialTier={initialTier} />
+            <LiveAlertFeed 
+              key={`feed-${activeRole}`} 
+              activeRole={activeRole} 
+              onSelectWork={setSelectedWorkId} 
+              initialTier={initialTier} 
+            />
           </div>
+        )}
+
+        {/* TAB: MODEL ACCURACY & TRIANGULATION VALIDATION */}
+        {activeTab === 'validation' && (
+          <ModelValidationView onSelectWork={setSelectedWorkId} />
         )}
 
         {/* TAB 3: BENFORD'S LAW FORENSIC MODULE */}
         {activeTab === 'benford' && (
-          <BenfordView onSelectWork={setSelectedWorkId} />
+          <BenfordView 
+            key={`benford-${activeRole}`} 
+            activeRole={activeRole} 
+            onSelectWork={setSelectedWorkId} 
+          />
         )}
 
-        {/* TAB 4: CONTRACTOR MONOPOLY & NETWORKS */}
+        {/* TAB 4: OCR CERTIFICATE LAB & DISCREPANCY MATRIX */}
+        {activeTab === 'ocr' && (
+          <OcrLabView onSelectWork={setSelectedWorkId} />
+        )}
+
+        {/* TAB 5: PHASH DUPLICATE PHOTO COLLISION VIEWER */}
+        {activeTab === 'phash' && (
+          <PHashViewer onSelectWork={setSelectedWorkId} />
+        )}
+
+        {/* TAB 6: CONTRACTOR MONOPOLY & NETWORKS */}
         {activeTab === 'vendors' && (
-          <VendorNetworkView onSelectWork={setSelectedWorkId} />
+          <VendorNetworkView 
+            key={`vendors-${activeRole}`} 
+            activeRole={activeRole} 
+            onSelectWork={setSelectedWorkId} 
+          />
         )}
 
         {/* TAB 5: GEOSPATIAL VIGILANCE */}
         {activeTab === 'map' && (
-          <GeoRiskMapView onSelectWork={setSelectedWorkId} />
+          <GeoRiskMapView 
+            key={`map-${activeRole}`} 
+            activeRole={activeRole} 
+            onSelectWork={setSelectedWorkId} 
+          />
         )}
 
         {/* TAB 6: IMMUTABLE AUDIT TRAIL LEDGER */}
         {activeTab === 'audit' && (
-          <AuditLedgerView onSelectWork={setSelectedWorkId} />
+          <AuditLedgerView 
+            key={`audit-${activeRole}`} 
+            activeRole={activeRole} 
+            onSelectWork={setSelectedWorkId} 
+          />
         )}
 
       </main>
