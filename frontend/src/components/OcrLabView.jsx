@@ -549,11 +549,13 @@ export default function OcrLabView({ onSelectWork }) {
                       className="w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = '';
-                        e.target.parentElement.innerHTML =
-                          '<div class="p-6 text-center text-xs text-slate-400 font-mono">Image rendered in PyMuPDF vault.<br/>Full PDF: ' +
-                          selectedDoc.pdf_file +
-                          '</div>';
+                        if (e.target && e.target.parentElement) {
+                          e.target.style.display = 'none';
+                          const fallback = document.createElement('div');
+                          fallback.className = 'p-6 text-center text-xs text-slate-400 font-mono';
+                          fallback.innerHTML = 'Image rendered in PyMuPDF vault.<br/>Full PDF: ' + (selectedDoc.pdf_file || '');
+                          e.target.parentElement.appendChild(fallback);
+                        }
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-between p-3 opacity-90">

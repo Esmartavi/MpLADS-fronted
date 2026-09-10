@@ -429,11 +429,13 @@ export default function PHashViewer({ onSelectWork }) {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = '';
-                      e.target.parentElement.innerHTML =
-                        '<div class="p-6 text-center text-xs text-slate-500 font-mono">Image Asset: ' +
-                        selectedPair.file_1 +
-                        '</div>';
+                      if (e.target && e.target.parentElement) {
+                        e.target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'p-6 text-center text-xs text-slate-500 font-mono';
+                        fallback.innerText = 'Image Asset: ' + (selectedPair.file_1 || '');
+                        e.target.parentElement.appendChild(fallback);
+                      }
                     }}
                   />
                   <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 border border-slate-700 text-[10px] font-mono text-cyan-300 flex items-center gap-1">
@@ -507,11 +509,13 @@ export default function PHashViewer({ onSelectWork }) {
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = '';
-                      e.target.parentElement.innerHTML =
-                        '<div class="p-6 text-center text-xs text-slate-500 font-mono">Image Asset: ' +
-                        selectedPair.file_2 +
-                        '</div>';
+                      if (e.target && e.target.parentElement) {
+                        e.target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'p-6 text-center text-xs text-slate-500 font-mono';
+                        fallback.innerText = 'Image Asset: ' + (selectedPair.file_2 || '');
+                        e.target.parentElement.appendChild(fallback);
+                      }
                     }}
                   />
                   <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 border border-slate-700 text-[10px] font-mono text-cyan-300 flex items-center gap-1">
@@ -671,8 +675,7 @@ export default function PHashViewer({ onSelectWork }) {
                         className="h-full w-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = '';
-                          e.target.parentElement.innerHTML = '<div class="text-[8px] text-slate-500 p-1">Img 1</div>';
+                          if (e.target) e.target.style.display = 'none';
                         }}
                       />
                     </div>
@@ -683,8 +686,7 @@ export default function PHashViewer({ onSelectWork }) {
                         className="h-full w-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = '';
-                          e.target.parentElement.innerHTML = '<div class="text-[8px] text-slate-500 p-1">Img 2</div>';
+                          if (e.target) e.target.style.display = 'none';
                         }}
                       />
                     </div>
