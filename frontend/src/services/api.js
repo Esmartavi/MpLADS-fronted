@@ -99,7 +99,7 @@ export const api = {
     const data = await handleResponse(res);
     // Transform into standard format for UI
     return {
-      total_works: data.total_works || 98649,
+      total_works: data.total_works !== undefined ? data.total_works : 0,
       total_sanctioned_cr: (data.total_sanctioned_amount || 0) / 10000000,
       total_spent_cr: (data.total_spent_amount || 0) / 10000000,
       total_at_risk_cr: (data.total_funds_at_risk || 0) / 10000000,
@@ -165,6 +165,12 @@ export const api = {
 
   getExplainStreamUrl(workId) {
     return `${API_BASE}/api/explain/stream/${encodeURIComponent(workId)}`;
+  },
+
+  // Completion Probability Inference
+  async predictCompletion(workId) {
+    const res = await fetch(`${API_BASE}/api/predict/completion/${encodeURIComponent(workId)}`, { headers: getHeaders() });
+    return handleResponse(res);
   },
 
   // Statutory Audit Investigation PDF Export

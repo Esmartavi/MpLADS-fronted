@@ -227,13 +227,13 @@ def calculate_approach_2_train_test_split(df: pd.DataFrame) -> dict:
     """
     print("\n[Approach 2] Running 80-20 Stratified Train-Test Generalization Split...")
 
-    confirmed_violation = (
-        to_bool_series(df["rule_premature_tranche"]) if "rule_premature_tranche" in df.columns else pd.Series(False, index=df.index) |
-        to_bool_series(df["rule_missing_photo"]) if "rule_missing_photo" in df.columns else pd.Series(False, index=df.index) |
-        to_bool_series(df["rule_early_payment"]) if "rule_early_payment" in df.columns else pd.Series(False, index=df.index) |
-        to_bool_series(df["rule_split_tender"]) if "rule_split_tender" in df.columns else pd.Series(False, index=df.index) |
-        to_bool_series(df["rule_overspend"]) if "rule_overspend" in df.columns else pd.Series(False, index=df.index)
-    ).astype(int)
+    r_prem = to_bool_series(df["rule_premature_tranche"]) if "rule_premature_tranche" in df.columns else pd.Series(False, index=df.index)
+    r_phot = to_bool_series(df["rule_missing_photo"]) if "rule_missing_photo" in df.columns else pd.Series(False, index=df.index)
+    r_earl = to_bool_series(df["rule_early_payment"]) if "rule_early_payment" in df.columns else pd.Series(False, index=df.index)
+    r_spli = to_bool_series(df["rule_split_tender"]) if "rule_split_tender" in df.columns else pd.Series(False, index=df.index)
+    r_over = to_bool_series(df["rule_overspend"]) if "rule_overspend" in df.columns else pd.Series(False, index=df.index)
+
+    confirmed_violation = (r_prem | r_phot | r_earl | r_spli | r_over).astype(int)
 
     features = [
         "sanction_amount",

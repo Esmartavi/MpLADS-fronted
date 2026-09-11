@@ -348,6 +348,18 @@ export default function LiveAlertFeed({ onSelectWork, initialTier = 'all', activ
                             style={{ width: `${Math.min(100, (Number(work.risk_score) || 0) * 100)}%` }}
                           />
                         </div>
+                        {work.completion_probability !== undefined && (
+                          <div className="text-[10px] font-mono text-slate-400 mt-1 flex items-center gap-1" title="Logistic Regression Completion Likelihood">
+                            <span>Comp:</span>
+                            <span className={`font-semibold ${
+                              Number(work.completion_probability) >= 0.70 ? 'text-emerald-400' :
+                              Number(work.completion_probability) >= 0.40 ? 'text-amber-400' :
+                              'text-rose-400'
+                            }`}>
+                              {(Number(work.completion_probability) * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Anomaly Triggers Badges */}

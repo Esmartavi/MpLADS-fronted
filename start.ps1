@@ -104,7 +104,18 @@ $FraudFlagsPath = Join-Path $ScriptDir "data\processed\fraud_flags.csv"
 if (Test-Path $FraudFlagsPath) {
     Write-Success "Found Audited Dataset: data\processed\fraud_flags.csv"
 } else {
-    Write-Warn "data\processed\fraud_flags.csv not found. Running with available records."
+    Write-Warn "data\processed\fraud_flags.csv not found! Automatically running ML pipeline..."
+    $CleanSanPath = Join-Path $ScriptDir "data\processed\clean_sanctioned.csv"
+    if (-not (Test-Path $CleanSanPath)) {
+        Write-Info "Clean datasets missing. Running clean_data.py first..."
+        & $PythonExe (Join-Path $ScriptDir "pipelines\clean_data.py")
+    }
+    & $PythonExe (Join-Path $ScriptDir "pipelines\fraud_models.py")
+    if (Test-Path $FraudFlagsPath) {
+        Write-Success "ML Pipeline finished successfully. Generated: data\processed\fraud_flags.csv"
+    } else {
+        Write-Err "ML Pipeline failed to generate fraud_flags.csv. Continuing with available files."
+    }
 }
 
 # Create logs directory

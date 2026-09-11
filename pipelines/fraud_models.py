@@ -19,6 +19,8 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from sklearn.ensemble import IsolationForest
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 # ---------------------------------------------------------------------
 # PATHS
@@ -340,7 +342,7 @@ def _build_vendor_alias_map(exp_data) -> dict:
             continue
 
         st_indices = [vendor_idx_map[v] for v in st_vendors]
-        st_embeds = global_embeddings[st_indices]
+        st_embeds = embeddings[st_indices]
 
         k = min(15, n_st - 1)
         nbrs = NearestNeighbors(n_neighbors=k, metric="euclidean", algorithm="ball_tree")
@@ -592,7 +594,7 @@ def model3_compliance_rules(san: pd.DataFrame, exp: pd.DataFrame,
         on="work_id"
     )
     t_merged["days_between"] = (pd.to_datetime(t_merged["t2_date"], errors="coerce") - pd.to_datetime(t_merged["t1_date"], errors="coerce")).dt.days
-    premature_work_ids = set(t_merged.loc[t_merged["days_between"] <= 7, "work_id"].tolist())
+    premature_work_ids = set(t_merged.loc[(t_merged["days_between"] >= 0) & (t_merged["days_between"] <= 7), "work_id"].tolist())
     df["rule_premature_tranche"] = df["work_id"].isin(premature_work_ids)
 
     # Rule 7: Stalled / Abandoned Execution with Disbursed Funds (Clause 4.8)
@@ -881,6 +883,86 @@ def model5_ensemble(m1: pd.DataFrame, m2: tuple, m3: pd.DataFrame,
 
 
 # ---------------------------------------------------------------------
+# MODEL 6 -- LOGISTIC REGRESSION COMPLETION PREDICTION
+# ---------------------------------------------------------------------
+
+def model6_completion_prediction(base: pd.DataFrame) -> pd.DataFrame:
+    """
+    Model 6 -- Completion Probability Prediction (Logistic Regression).
+    Predicts the likelihood of a project successfully reaching completion (vs stalling/abandonment).
+    Trained on statutory terminal outcomes:
+      y = 1: Successfully completed ('Work Completed')
+      y = 0: Stalled past statutory 1-year execution window without completion
+    Features:
+      - spend_ratio: total_spent / sanction_amount (financial execution progress)
+      - days_norm: days_since_sanction / 365.0 (elapsed time normalized)
+      - log_amount: log1p(sanction_amount) (project financial scale)
+      - spend_pace: total_spent / days (disbursement velocity)
+      - compliance_score: statutory violations penalty
+      - anomaly_score: Isolation Forest anomaly score
+      - vendor_conc: contractor monopoly concentration
+    """
+    print("\n[Model 6] Logistic Regression Completion Probability Prediction...")
+    df = base.copy()
+
+    # Define Terminal Outcomes for Training
+    df['terminal_outcome'] = np.nan
+    df.loc[df['work_status'] == 'Work Completed', 'terminal_outcome'] = 1
+    df.loc[(df['work_status'] != 'Work Completed') & (df['days_since_sanction'] > 365), 'terminal_outcome'] = 0
+
+    train_mask = df['terminal_outcome'].notna()
+    train_df = df[train_mask].copy()
+
+    # Feature Engineering
+    spend_ratio = (df['total_spent'] / df['sanction_amount'].replace(0, np.nan)).fillna(0).clip(0, 2)
+    log_amount = np.log1p(df['sanction_amount'].clip(lower=0))
+    spend_pace = df['total_spent'] / (df['days_since_sanction'].clip(lower=1))
+    vendor_conc = df['work_vendor_concentration'].fillna(0) if 'work_vendor_concentration' in df.columns else pd.Series(0, index=df.index)
+    days_norm = df['days_since_sanction'] / 365.0
+
+    feat_df = pd.DataFrame({
+        'log_amount': log_amount,
+        'spend_ratio': spend_ratio,
+        'spend_pace': spend_pace,
+        'days_norm': days_norm,
+        'anomaly_score': df['anomaly_score'].fillna(0),
+        'compliance_score': df['compliance_score'].fillna(0),
+        'vendor_conc': vendor_conc
+    })
+
+    features = ['log_amount', 'spend_ratio', 'spend_pace', 'days_norm', 'anomaly_score', 'compliance_score', 'vendor_conc']
+    X_train = feat_df.loc[train_mask, features]
+    y_train = train_df['terminal_outcome']
+
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+
+    clf = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
+    clf.fit(X_train_scaled, y_train)
+
+    X_all_scaled = scaler.transform(feat_df[features])
+    probs = clf.predict_proba(X_all_scaled)[:, 1]
+
+    # Completed works reflect completion (>= 0.95)
+    df['completion_probability'] = np.where(
+        df['work_status'] == 'Work Completed',
+        np.maximum(probs, 0.95),
+        probs
+    ).round(3)
+
+    # Drop temporary column
+    df = df.drop(columns=['terminal_outcome'])
+
+    print(f"  Trained Logistic Regression on {len(train_df):,} historical terminal cases")
+    print(f"  Average predicted completion probability: {df['completion_probability'].mean()*100:.1f}%")
+    print(f"  - Completed works avg       : {df[df['work_status']=='Work Completed']['completion_probability'].mean()*100:.1f}%")
+    print(f"  - Partially completed avg   : {df[df['work_status']=='Work partially Completed']['completion_probability'].mean()*100:.1f}%")
+    print(f"  - Pre-execution / other avg : {df[~df['work_status'].isin(['Work Completed', 'Work partially Completed'])]['completion_probability'].mean()*100:.1f}%")
+
+    return df
+
+
+# ---------------------------------------------------------------------
 # SUMMARY REPORT
 # ---------------------------------------------------------------------
 
@@ -916,6 +998,12 @@ def write_summary(flags: pd.DataFrame, m2_pair: pd.DataFrame):
         lines.append(f"  Stalled Execution (>1y)     : {flags['rule_stalled_execution'].sum():,}")
     if "rule_split_tender" in flags.columns:
         lines.append(f"  GFR Split Tendering (Gaming): {flags['rule_split_tender'].sum():,}")
+    if "completion_probability" in flags.columns:
+        lines.append(f"  Avg completion probability  : {flags['completion_probability'].mean()*100:.1f}%")
+        high_comp = (flags['completion_probability'] >= 0.70).sum()
+        low_comp  = (flags['completion_probability'] < 0.40).sum()
+        lines.append(f"  High probability (>=70%)    : {high_comp:,} works")
+        lines.append(f"  At-risk completion (<40%)   : {low_comp:,} works")
     lines.append(f"\n  Total sanctioned amount  : Rs.{total_sanctioned:,.0f}")
     lines.append(f"  Amount at medium+ risk   : Rs.{flagged_amount:,.0f}")
 
@@ -968,6 +1056,7 @@ def main():
     m4       = model4_timeline(san)
 
     flags    = model5_ensemble(m1, m2, m3, m4, san, exp)
+    flags    = model6_completion_prediction(flags)
 
     flags.to_csv(OUT_FILE, index=False, encoding="utf-8-sig")
     print(f"\n  fraud_flags.csv saved: {len(flags):,} works scored")

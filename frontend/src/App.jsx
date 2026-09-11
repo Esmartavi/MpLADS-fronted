@@ -60,7 +60,6 @@ export default function App() {
   }, [activeRole]);
 
   const handleRoleChange = async (newRole) => {
-    setActiveRole(newRole);
     const roleCredentials = {
       ministry: ['ministry_admin', 'Ministry@2026'],
       state: ['state_nodal_up', 'StateUP@2026'],
@@ -72,11 +71,12 @@ export default function App() {
       try {
         await api.login(creds[0], creds[1]);
         showToast(`Switched access context to ${newRole.toUpperCase()} level`);
-        loadKpis();
       } catch (err) {
         console.error('Role switch error:', err);
       }
     }
+    setActiveRole(newRole);
+    loadKpis();
   };
 
   const showToast = (msg) => {
@@ -134,10 +134,26 @@ export default function App() {
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
                 <span>
-                  {activeRole === 'ministry' && 'All 36 States & Union Territories // 98,649 Works // 15,690 Critical Flags'}
-                  {activeRole === 'state' && 'State Jurisdiction: Uttar Pradesh (75 Districts) // 19,892 Works Monitored'}
-                  {activeRole === 'district' && 'District Jurisdiction: Pilibhit, UP // 293 Works Monitored'}
-                  {activeRole === 'mp' && 'Parliamentary Constituency Scope // 178 Works Monitored // 14 Critical Flags'}
+                  {activeRole === 'ministry' && (
+                    kpis 
+                      ? `All 36 States & Union Territories // ${kpis.total_works.toLocaleString()} Works // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : 'All 36 States & Union Territories // Live Telemetry Loading...'
+                  )}
+                  {activeRole === 'state' && (
+                    kpis 
+                      ? `State Jurisdiction: Uttar Pradesh (75 Districts) // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : 'State Jurisdiction: Uttar Pradesh // Live Telemetry Loading...'
+                  )}
+                  {activeRole === 'district' && (
+                    kpis 
+                      ? `District Jurisdiction: Pilibhit, UP // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : 'District Jurisdiction: Pilibhit, UP // Live Telemetry Loading...'
+                  )}
+                  {activeRole === 'mp' && (
+                    kpis 
+                      ? `Parliamentary Constituency Scope // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : 'Parliamentary Constituency Scope // Live Telemetry Loading...'
+                  )}
                 </span>
               </div>
             </div>

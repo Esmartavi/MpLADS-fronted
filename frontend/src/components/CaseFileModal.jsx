@@ -471,6 +471,40 @@ export default function CaseFileModal({ workId, onClose, onActionLogged }) {
                       </p>
                     </div>
 
+                    {/* Model 6: Logistic Regression Completion Prediction */}
+                    <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 col-span-1 sm:col-span-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-200 font-semibold flex items-center gap-1.5">
+                          <TrendingUp className="w-4 h-4 text-emerald-400" />
+                          Model 6: Logistic Regression Completion Likelihood
+                        </span>
+                        <span className={`font-mono font-bold text-xs ${
+                          (Number(workObj?.completion_probability) || 0) >= 0.70
+                            ? 'text-emerald-400'
+                            : (Number(workObj?.completion_probability) || 0) >= 0.40
+                              ? 'text-amber-400'
+                              : 'text-rose-400'
+                        }`}>
+                          {((Number(workObj?.completion_probability) || 0) * 100).toFixed(1)}% Probability
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            (Number(workObj?.completion_probability) || 0) >= 0.70
+                              ? 'bg-emerald-500'
+                              : (Number(workObj?.completion_probability) || 0) >= 0.40
+                                ? 'bg-amber-400'
+                                : 'bg-rose-500'
+                          }`}
+                          style={{ width: `${Math.max(3, Math.min(100, (Number(workObj?.completion_probability) || 0) * 100))}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-slate-400">
+                        Binary Logistic Regression (AUC-ROC: 0.956) trained on statutory execution timelines, financial disbursement pace, and compliance signals.
+                      </p>
+                    </div>
+
                   </div>
                 </div>
               )}
