@@ -399,7 +399,7 @@ export default function GeoRiskMapView({ onSelectWork, activeRole = 'ministry' }
                     : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
                 }`}
               >
-                <Radio className={`w-3.5 h-3.5 ${showGpsLayer ? 'text-rose-400 animate-pulse' : ''}`} />
+                <Radio className={`w-3.5 h-3.5 ${showGpsLayer ? 'text-rose-400' : ''}`} />
                 <span>12 Forensic GPS Pins</span>
                 <span className="px-1.5 py-0.2 rounded text-[10px] bg-rose-900/80 text-rose-200 font-bold">
                   Ground Truth
@@ -548,32 +548,21 @@ export default function GeoRiskMapView({ onSelectWork, activeRole = 'ministry' }
                         onMouseEnter={() => setHoveredGps(p)}
                         onMouseLeave={() => setHoveredGps(null)}
                       >
-                        {/* Concentric Pulsing Radar Rings */}
+                        {/* Static Marker Pin */}
                         <circle 
                           cx={px} 
                           cy={py} 
-                          r={isSelected ? "18" : "12"} 
-                          className="animate-ping" 
-                          fill="#f43f5e" 
-                          opacity="0.4" 
-                        />
-                        
-                        {/* Middle Halo */}
-                        <circle 
-                          cx={px} 
-                          cy={py} 
-                          r={isSelected ? "8" : "5.5"} 
+                          r={isSelected ? "7" : "5"} 
                           fill="#f43f5e" 
                           stroke="#ffffff" 
                           strokeWidth={isSelected ? "2" : "1.2"} 
-                          filter="url(#glow-rose)"
                         />
                         
                         {/* Center Core Pinpoint */}
                         <circle 
                           cx={px} 
                           cy={py} 
-                          r="2.5" 
+                          r="2" 
                           fill="#ffffff" 
                         />
                       </g>
@@ -681,7 +670,7 @@ export default function GeoRiskMapView({ onSelectWork, activeRole = 'ministry' }
             {/* Bottom-Left GPS Status Pill */}
             {showGpsLayer && (
               <div className="absolute bottom-3 left-3 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 backdrop-blur-md text-xs font-mono flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                 <span className="text-slate-300">12 Camera Watermarks Triangulated in Bijnor/UP</span>
               </div>
             )}
