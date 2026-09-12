@@ -388,9 +388,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
               </div>
 
               {/* Statutory Information Card */}
-              <div className="p-4 rounded-2xl bg-[#040714]/90 border border-violet-500/20 flex items-start space-x-3 selection:bg-indigo-600 selection:text-white">
-                <ShieldCheck className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
-                <div className="text-xs sm:text-sm text-slate-300 dark:text-slate-300 leading-relaxed font-sans selection:bg-indigo-600 selection:text-white">
+              <div className="statutory-card p-4 rounded-2xl bg-violet-50/90 dark:bg-[#040714]/90 border border-violet-200 dark:border-violet-500/30 flex items-start space-x-3 selection:bg-indigo-600 selection:text-white">
+                <ShieldCheck className="w-5 h-5 text-violet-600 dark:text-violet-400 flex-shrink-0 mt-0.5" />
+                <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold leading-relaxed font-sans selection:bg-indigo-600 selection:text-white">
                   Access to Bharat-Drishti is restricted to authorized MoSPI officers, State Nodal Authorities, District Magistrates, and Members of Parliament under GFR 2017 &amp; statutory vigilance protocols.
                 </div>
               </div>

@@ -434,20 +434,20 @@ html.light .glass-input:focus {
 
 /* Light Mode Typography Adjustments */
 html.light .text-white {
-  color: #0f172a;
+  color: #0f172a !important;
 }
 html.light .text-slate-100,
 html.light .text-slate-200 {
-  color: #1e293b;
+  color: #1e293b !important;
 }
 html.light .text-slate-300 {
-  color: #334155;
+  color: #334155 !important;
 }
 html.light .text-slate-400 {
-  color: #475569;
+  color: #475569 !important;
 }
 html.light .text-slate-500 {
-  color: #64748b;
+  color: #64748b !important;
 }
 
 /* High contrast colored texts in light mode */
@@ -675,5 +675,26 @@ html.light *::-moz-selection {
   background-color: #4338ca !important;
   color: #ffffff !important;
   text-shadow: none !important;
+}
+
+/* ── Statutory Information Card High-Contrast Rules ── */
+.statutory-card {
+  color: #0f172a;
+}
+html.light .statutory-card {
+  background-color: #f5f3ff !important;
+  border: 1px solid #ddd6fe !important;
+}
+html.light .statutory-card div,
+html.light .statutory-card p,
+html.light .statutory-card span {
+  color: #1e1b4b !important;
+  font-weight: 600 !important;
+}
+html.dark .statutory-card div,
+html.dark .statutory-card p,
+html.dark .statutory-card span {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
 }
 
