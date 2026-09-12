@@ -131,17 +131,11 @@ DEMO_USERS = {
 }
 
 # -- Database Helper & WAL Mode ------------------------------------------------
-SUPABASE_DB_URL = os.getenv("DATABASE_URL")
-
 def get_supabase_conn():
-    """Connect to Supabase PostgreSQL for cloud tamper-evident audit ledger."""
-    if not SUPABASE_DB_URL:
-        return None
+    """Connect to Supabase PostgreSQL for cloud tamper-evident audit ledger with pooler fallback."""
     try:
-        import psycopg2
-        conn = psycopg2.connect(SUPABASE_DB_URL, connect_timeout=5)
-        conn.autocommit = True
-        return conn
+        from scripts.db_helper import get_db_connection
+        return get_db_connection(connect_timeout=5)
     except Exception as _e:
         print(f"[!] Supabase connection warning: {_e}")
         return None

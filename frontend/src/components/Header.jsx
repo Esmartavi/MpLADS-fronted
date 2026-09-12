@@ -15,7 +15,9 @@ import {
   Building2,
   MapPin,
   Vote,
-  ShieldCheck
+  ShieldCheck,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -27,7 +29,9 @@ export default function Header({
   setActiveTab,
   currentUser,
   onOpenAuthModal,
-  onLogout
+  onLogout,
+  theme = 'dark',
+  onToggleTheme
 }) {
   const [ping, setPing] = useState(null);
   const [isOnline, setIsOnline] = useState(true);
@@ -163,6 +167,27 @@ export default function Header({
               <span className="text-slate-300">{isOnline ? 'CONNECTED' : 'OFFLINE'}</span>
               {ping && <span className="text-cyan-400 text-[10px]">{ping}ms</span>}
             </div>
+
+            {/* Theme Toggle Button */}
+            {onToggleTheme && (
+              <button
+                onClick={onToggleTheme}
+                className="p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center hover:scale-105"
+                style={{
+                  background: theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(15,23,42,0.8)',
+                  border: theme === 'light' ? '1px solid rgba(203,213,225,0.9)' : '1px solid rgba(139,92,246,0.3)',
+                  color: theme === 'light' ? '#0f172a' : '#ffffff'
+                }}
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                aria-label="Toggle Theme"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-violet-600" />
+                )}
+              </button>
+            )}
 
             {/* AI Secretary Briefing Button */}
             <button

@@ -5,16 +5,13 @@ Creates the 'raw-mplads-archives' bucket in Supabase Storage.
 """
 
 import os
-import psycopg2
-from dotenv import load_dotenv
+import sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
-load_dotenv()
-
-DB_URL = os.getenv("DATABASE_URL")
-if not DB_URL:
-    raise ValueError("DATABASE_URL not found in .env")
-
-conn = psycopg2.connect(DB_URL)
+from scripts.db_helper import get_db_connection
+conn = get_db_connection()
 conn.autocommit = True
 cur = conn.cursor()
 

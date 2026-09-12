@@ -33,13 +33,13 @@ export class ErrorBoundary extends React.Component {
               A dashboard component encountered an interface exception. You can reload the vigilance terminal below.
             </p>
             {this.state.error && (
-              <pre className="text-[11px] font-mono text-rose-300 bg-slate-900/90 p-3 rounded-lg text-left overflow-x-auto border border-slate-800 max-h-32">
+              <pre className="text-xs font-mono text-rose-300 bg-slate-900/90 p-3 rounded-lg text-left overflow-x-auto border border-slate-800 max-h-32">
                 {this.state.error.message || String(this.state.error)}
               </pre>
             )}
             <button
               onClick={this.handleReload}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-violet-950/50"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Reload Terminal</span>

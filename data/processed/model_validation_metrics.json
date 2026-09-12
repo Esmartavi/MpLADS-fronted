@@ -1,16 +1,16 @@
 {
   "metadata": {
-    "generated_at": "2026-09-10T13:51:50.719818",
-    "platform": "Bharat-Drishti AI Forensic Vigilance (MoSPI PS-26102)",
+    "generated_at": "2026-09-13T00:45:29.782068",
+    "platform": "Bharat-Drishti AI Forensic Vigilance (MoSPI)",
     "total_works_monitored": 98649
   },
   "executive_summary": {
-    "statutory_rules_precision_pct": 100.0,
+    "statutory_rules_precision_pct": 99.99,
     "statutory_false_positive_rate_pct": 0.0,
-    "ensemble_precision_pct": 83.66,
-    "ensemble_recall_pct": 70.51,
-    "ensemble_f1_pct": 76.52,
-    "ensemble_auc_roc": 0.8551,
+    "ensemble_precision_pct": 76.43,
+    "ensemble_recall_pct": 73.93,
+    "ensemble_f1_pct": 75.16,
+    "ensemble_auc_roc": 0.875,
     "benford_triangulation_agreement": "20/20 (100.0%)",
     "top_n_precision": "20/20 (100.0%)"
   },
@@ -20,28 +20,28 @@
     "confirmed_statutory_violations_pct": 22.83,
     "tier1_critical": {
       "name": "Tier 1: Confirmed Statutory Violations (CRITICAL)",
-      "flagged_count": 15690,
-      "true_positives": 15690,
-      "false_positives": 0,
-      "false_negatives": 6830,
-      "true_negatives": 76129,
-      "precision_pct": 100.0,
-      "recall_pct": 69.67,
-      "f1_score_pct": 82.12,
+      "flagged_count": 15731,
+      "true_positives": 15729,
+      "false_positives": 2,
+      "false_negatives": 6791,
+      "true_negatives": 76127,
+      "precision_pct": 99.99,
+      "recall_pct": 69.84,
+      "f1_score_pct": 82.24,
       "false_positive_rate_pct": 0.0,
       "interpretation": "Deterministic hard rules \u2014 100% precision with 0.0% false positive rate by statutory definition."
     },
     "tier2_ensemble": {
       "name": "Tier 2: Weighted Ensemble (CRITICAL + HIGH)",
-      "flagged_count": 18979,
-      "true_positives": 15878,
-      "false_positives": 3101,
-      "false_negatives": 6642,
-      "true_negatives": 73028,
-      "precision_pct": 83.66,
-      "recall_pct": 70.51,
-      "f1_score_pct": 76.52,
-      "auc_roc": 0.8551,
+      "flagged_count": 21784,
+      "true_positives": 16650,
+      "false_positives": 5134,
+      "false_negatives": 5870,
+      "true_negatives": 70995,
+      "precision_pct": 76.43,
+      "recall_pct": 73.93,
+      "f1_score_pct": 75.16,
+      "auc_roc": 0.875,
       "interpretation": "Catches 70.5% of confirmed statutory crimes. The remaining 3,101 ML flags represent novel financial/vendor anomalies routed to the auditor queue."
     },
     "model1_isolation_forest_top10": {
@@ -73,9 +73,9 @@
       "split_tender": {
         "name": "GFR 2017 Rules 149/155 (Split Tendering \u20b94.5L-\u20b94.99L & \u20b99.0L-\u20b99.99L)",
         "statutory_count": 8943,
-        "caught_by_critical": 2113,
-        "caught_by_ensemble": 2301,
-        "recall_pct": 25.73
+        "caught_by_critical": 2152,
+        "caught_by_ensemble": 3073,
+        "recall_pct": 34.36
       },
       "early_payment": {
         "name": "Disbursement Prior to Administrative Sanction Date",
@@ -97,12 +97,12 @@
     "train_samples": 78919,
     "test_samples": 19730,
     "test_split_ratio": "80% Train / 20% Unseen Test",
-    "test_isolation_forest_auc": 0.5245,
-    "test_ensemble_risk_auc": 0.9354,
-    "test_precision_at_top_10_pct": 6.13,
-    "test_top10_true_positives": 121,
-    "test_top10_false_positives": 1854,
-    "conclusion": "The full ensemble achieves AUC-ROC of 0.9354 on completely unseen test data, proving robust generalization without overfitting."
+    "test_isolation_forest_auc": 0.5425,
+    "test_ensemble_risk_auc": 0.8731,
+    "test_precision_at_top_10_pct": 25.29,
+    "test_top10_true_positives": 499,
+    "test_top10_false_positives": 1474,
+    "conclusion": "The full ensemble achieves AUC-ROC of 0.8731 on completely unseen test data, proving robust generalization without overfitting."
   },
   "approach_3_benford_cross_validation": {
     "top_mps_evaluated": 20,
@@ -115,7 +115,7 @@
         "mp_name": "Shri Dorjee Tshering Lepcha",
         "total_works": 94,
         "critical_works": 86,
-        "avg_risk_score": 79.8,
+        "avg_risk_score": 80.4,
         "total_sanctioned_cr": 9.79,
         "benford_mad": 0.0536,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -125,62 +125,10 @@
       },
       {
         "rank": 2,
-        "mp_name": "Dr. Rajesh Mishra",
-        "total_works": 261,
-        "critical_works": 214,
-        "avg_risk_score": 76.5,
-        "total_sanctioned_cr": 19.86,
-        "benford_mad": 0.0687,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 144.6,
-        "is_independent_match": true
-      },
-      {
-        "rank": 3,
-        "mp_name": "Shri Brij Lal",
-        "total_works": 147,
-        "critical_works": 110,
-        "avg_risk_score": 75.0,
-        "total_sanctioned_cr": 17.57,
-        "benford_mad": 0.0638,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 80.7,
-        "chi_square": 51.11,
-        "is_independent_match": true
-      },
-      {
-        "rank": 4,
-        "mp_name": "Sher Singh Ghubaya",
-        "total_works": 394,
-        "critical_works": 299,
-        "avg_risk_score": 74.6,
-        "total_sanctioned_cr": 9.78,
-        "benford_mad": 0.1701,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 1592.04,
-        "is_independent_match": true
-      },
-      {
-        "rank": 5,
-        "mp_name": "Prof. Manoj Kumar Jha",
-        "total_works": 119,
-        "critical_works": 95,
-        "avg_risk_score": 73.5,
-        "total_sanctioned_cr": 10.38,
-        "benford_mad": 0.1698,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 670.98,
-        "is_independent_match": true
-      },
-      {
-        "rank": 6,
         "mp_name": "Shri Neeraj Shekhar",
         "total_works": 93,
-        "critical_works": 34,
-        "avg_risk_score": 71.7,
+        "critical_works": 47,
+        "avg_risk_score": 79.7,
         "total_sanctioned_cr": 9.51,
         "benford_mad": 0.1887,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -189,24 +137,50 @@
         "is_independent_match": true
       },
       {
-        "rank": 7,
-        "mp_name": "Devesh Shakya",
-        "total_works": 305,
-        "critical_works": 223,
-        "avg_risk_score": 71.3,
-        "total_sanctioned_cr": 8.87,
-        "benford_mad": 0.1649,
+        "rank": 3,
+        "mp_name": "Dr. Rajesh Mishra",
+        "total_works": 261,
+        "critical_works": 214,
+        "avg_risk_score": 77.4,
+        "total_sanctioned_cr": 19.86,
+        "benford_mad": 0.0687,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
         "anomaly_score": 100.0,
-        "chi_square": 1167.87,
+        "chi_square": 144.6,
         "is_independent_match": true
       },
       {
-        "rank": 8,
+        "rank": 4,
+        "mp_name": "Shri Brij Lal",
+        "total_works": 147,
+        "critical_works": 110,
+        "avg_risk_score": 76.5,
+        "total_sanctioned_cr": 17.57,
+        "benford_mad": 0.0638,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 80.7,
+        "chi_square": 51.11,
+        "is_independent_match": true
+      },
+      {
+        "rank": 5,
+        "mp_name": "Sher Singh Ghubaya",
+        "total_works": 394,
+        "critical_works": 299,
+        "avg_risk_score": 75.9,
+        "total_sanctioned_cr": 9.78,
+        "benford_mad": 0.1701,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 1592.04,
+        "is_independent_match": true
+      },
+      {
+        "rank": 6,
         "mp_name": "R.K. Chaudhary",
         "total_works": 76,
-        "critical_works": 16,
-        "avg_risk_score": 70.4,
+        "critical_works": 17,
+        "avg_risk_score": 75.7,
         "total_sanctioned_cr": 5.77,
         "benford_mad": 0.1115,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -215,11 +189,37 @@
         "is_independent_match": true
       },
       {
+        "rank": 7,
+        "mp_name": "Prof. Manoj Kumar Jha",
+        "total_works": 119,
+        "critical_works": 95,
+        "avg_risk_score": 74.7,
+        "total_sanctioned_cr": 10.38,
+        "benford_mad": 0.1698,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 670.98,
+        "is_independent_match": true
+      },
+      {
+        "rank": 8,
+        "mp_name": "Devesh Shakya",
+        "total_works": 305,
+        "critical_works": 223,
+        "avg_risk_score": 73.9,
+        "total_sanctioned_cr": 8.87,
+        "benford_mad": 0.1649,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 1167.87,
+        "is_independent_match": true
+      },
+      {
         "rank": 9,
         "mp_name": "Shri Aditya Prasad",
         "total_works": 219,
         "critical_works": 140,
-        "avg_risk_score": 70.2,
+        "avg_risk_score": 72.6,
         "total_sanctioned_cr": 17.67,
         "benford_mad": 0.0738,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -229,23 +229,10 @@
       },
       {
         "rank": 10,
-        "mp_name": "Arvind Dharmapuri",
-        "total_works": 601,
-        "critical_works": 456,
-        "avg_risk_score": 68.4,
-        "total_sanctioned_cr": 19.19,
-        "benford_mad": 0.1075,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 934.74,
-        "is_independent_match": true
-      },
-      {
-        "rank": 11,
         "mp_name": "Smt. Mahua Maji",
         "total_works": 326,
         "critical_works": 149,
-        "avg_risk_score": 67.4,
+        "avg_risk_score": 71.9,
         "total_sanctioned_cr": 16.97,
         "benford_mad": 0.1177,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -254,11 +241,50 @@
         "is_independent_match": true
       },
       {
+        "rank": 11,
+        "mp_name": "Arvind Dharmapuri",
+        "total_works": 601,
+        "critical_works": 456,
+        "avg_risk_score": 69.6,
+        "total_sanctioned_cr": 19.19,
+        "benford_mad": 0.1075,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 934.74,
+        "is_independent_match": true
+      },
+      {
         "rank": 12,
+        "mp_name": "Vishweshwar Hegde Kageri",
+        "total_works": 57,
+        "critical_works": 25,
+        "avg_risk_score": 68.8,
+        "total_sanctioned_cr": 4.01,
+        "benford_mad": 0.1397,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 165.75,
+        "is_independent_match": true
+      },
+      {
+        "rank": 13,
+        "mp_name": "Sanjay Seth",
+        "total_works": 150,
+        "critical_works": 50,
+        "avg_risk_score": 68.6,
+        "total_sanctioned_cr": 9.78,
+        "benford_mad": 0.0647,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 96.9,
+        "chi_square": 84.1,
+        "is_independent_match": true
+      },
+      {
+        "rank": 14,
         "mp_name": "Shri Satish Chandra Dubey",
         "total_works": 217,
         "critical_works": 154,
-        "avg_risk_score": 66.8,
+        "avg_risk_score": 68.5,
         "total_sanctioned_cr": 18.24,
         "benford_mad": 0.0653,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -267,50 +293,11 @@
         "is_independent_match": true
       },
       {
-        "rank": 13,
-        "mp_name": "Shri Mithlesh Kumar",
-        "total_works": 200,
-        "critical_works": 96,
-        "avg_risk_score": 66.0,
-        "total_sanctioned_cr": 17.2,
-        "benford_mad": 0.1709,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 816.47,
-        "is_independent_match": true
-      },
-      {
-        "rank": 14,
-        "mp_name": "D Ravikumar",
-        "total_works": 266,
-        "critical_works": 175,
-        "avg_risk_score": 65.8,
-        "total_sanctioned_cr": 13.28,
-        "benford_mad": 0.1104,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 399.64,
-        "is_independent_match": true
-      },
-      {
         "rank": 15,
-        "mp_name": "Shri Tapir Gao",
-        "total_works": 115,
-        "critical_works": 76,
-        "avg_risk_score": 65.0,
-        "total_sanctioned_cr": 10.06,
-        "benford_mad": 0.072,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 96.4,
-        "chi_square": 82.33,
-        "is_independent_match": true
-      },
-      {
-        "rank": 16,
         "mp_name": "Shri Ramji",
         "total_works": 239,
         "critical_works": 154,
-        "avg_risk_score": 64.9,
+        "avg_risk_score": 68.1,
         "total_sanctioned_cr": 14.57,
         "benford_mad": 0.1115,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -319,24 +306,11 @@
         "is_independent_match": true
       },
       {
-        "rank": 17,
-        "mp_name": "Richard Vanlalhmangaiha",
-        "total_works": 172,
-        "critical_works": 113,
-        "avg_risk_score": 64.3,
-        "total_sanctioned_cr": 9.99,
-        "benford_mad": 0.0726,
-        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
-        "anomaly_score": 100.0,
-        "chi_square": 118.46,
-        "is_independent_match": true
-      },
-      {
-        "rank": 18,
+        "rank": 16,
         "mp_name": "Amarsing Tisso",
         "total_works": 86,
         "critical_works": 50,
-        "avg_risk_score": 64.2,
+        "avg_risk_score": 66.9,
         "total_sanctioned_cr": 8.1,
         "benford_mad": 0.0447,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
@@ -345,29 +319,55 @@
         "is_independent_match": true
       },
       {
-        "rank": 19,
-        "mp_name": "Shri Anil Kumar Yadav Mandadi",
-        "total_works": 81,
-        "critical_works": 47,
-        "avg_risk_score": 63.6,
-        "total_sanctioned_cr": 5.9,
-        "benford_mad": 0.1565,
+        "rank": 17,
+        "mp_name": "D Ravikumar",
+        "total_works": 266,
+        "critical_works": 175,
+        "avg_risk_score": 66.8,
+        "total_sanctioned_cr": 13.28,
+        "benford_mad": 0.1104,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
         "anomaly_score": 100.0,
-        "chi_square": 298.31,
+        "chi_square": 399.64,
+        "is_independent_match": true
+      },
+      {
+        "rank": 18,
+        "mp_name": "Shri Tapir Gao",
+        "total_works": 115,
+        "critical_works": 76,
+        "avg_risk_score": 66.3,
+        "total_sanctioned_cr": 10.06,
+        "benford_mad": 0.072,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 96.4,
+        "chi_square": 82.33,
+        "is_independent_match": true
+      },
+      {
+        "rank": 19,
+        "mp_name": "Richard Vanlalhmangaiha",
+        "total_works": 172,
+        "critical_works": 113,
+        "avg_risk_score": 65.8,
+        "total_sanctioned_cr": 9.99,
+        "benford_mad": 0.0726,
+        "conformity_status": "Non-Conformity (Suspicious Manipulation)",
+        "anomaly_score": 100.0,
+        "chi_square": 118.46,
         "is_independent_match": true
       },
       {
         "rank": 20,
-        "mp_name": "Shri Narayanasa K. Bhandage",
-        "total_works": 115,
-        "critical_works": 70,
-        "avg_risk_score": 63.4,
-        "total_sanctioned_cr": 8.25,
-        "benford_mad": 0.1232,
+        "mp_name": "Mohite Patil Dhairyasheel Rajsinh",
+        "total_works": 67,
+        "critical_works": 41,
+        "avg_risk_score": 65.6,
+        "total_sanctioned_cr": 2.25,
+        "benford_mad": 0.1367,
         "conformity_status": "Non-Conformity (Suspicious Manipulation)",
         "anomaly_score": 100.0,
-        "chi_square": 381.84,
+        "chi_square": 176.42,
         "is_independent_match": true
       }
     ]
@@ -379,35 +379,21 @@
       "mp_name": "Sk Nurul Islam",
       "state": "West Bengal",
       "sanction_amount": 2800000.0,
-      "risk_score": 96.8,
+      "risk_score": 96.1,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
-      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'MA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violation: Tranc"
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'JOY MAA TARA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violat"
     },
     {
       "rank": 2,
-      "work_id": "WS/MP18250/2024-2025/142044",
-      "mp_name": "Sk Nurul Islam",
-      "state": "West Bengal",
-      "sanction_amount": 2425500.0,
-      "risk_score": 96.2,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'MA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violation: Tranc"
-    },
-    {
-      "rank": 3,
       "work_id": "WS/MP18230/2025-2026/161482",
       "mp_name": "R.K. Chaudhary",
       "state": "Uttar Pradesh",
       "sanction_amount": 5714566.0,
-      "risk_score": 95.9,
+      "risk_score": 95.7,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -416,18 +402,32 @@
       "model_reason": "[Finance] 98% spent vs 40% complete | [Vendor] Vendor 'SHREE HARIOM INFOTECH' received 89.6% of MP spend | [Compliance] Clause 4.3 violation"
     },
     {
-      "rank": 4,
-      "work_id": "WS/MP18250/2024-2025/142045",
+      "rank": 3,
+      "work_id": "WS/MP18250/2024-2025/142044",
       "mp_name": "Sk Nurul Islam",
       "state": "West Bengal",
-      "sanction_amount": 1732500.0,
-      "risk_score": 95.8,
+      "sanction_amount": 2425500.0,
+      "risk_score": 95.4,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
-      "model_reason": "[Finance] 99% spent vs 40% complete | [Vendor] Vendor 'MA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violation: Tranch"
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'JOY MAA TARA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violat"
+    },
+    {
+      "rank": 4,
+      "work_id": "WS/MP18250/2024-2025/142045",
+      "mp_name": "Sk Nurul Islam",
+      "state": "West Bengal",
+      "sanction_amount": 1732500.0,
+      "risk_score": 94.9,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
+      ],
+      "model_reason": "[Finance] 99% spent vs 40% complete | [Vendor] Vendor 'JOY MAA TARA ENTERPRISE' received 68.9% of MP spend | [Compliance] Clause 4.3 violati"
     },
     {
       "rank": 5,
@@ -435,7 +435,7 @@
       "mp_name": "Smt. Sagarika Ghose",
       "state": "West Bengal",
       "sanction_amount": 49000000.0,
-      "risk_score": 95.3,
+      "risk_score": 94.5,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -449,7 +449,7 @@
       "mp_name": "Shri Mohammed Nadimul Haque",
       "state": "West Bengal",
       "sanction_amount": 44848000.0,
-      "risk_score": 95.1,
+      "risk_score": 94.2,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -463,7 +463,7 @@
       "mp_name": "Shri Samirul Islam",
       "state": "West Bengal",
       "sanction_amount": 72500000.0,
-      "risk_score": 95.1,
+      "risk_score": 94.2,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -473,39 +473,11 @@
     },
     {
       "rank": 8,
-      "work_id": "WS/MP218/2024-2025/171165",
-      "mp_name": "Ms. Dola Sen",
-      "state": "West Bengal",
-      "sanction_amount": 67500000.0,
-      "risk_score": 94.4,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Finance] 97% spent vs 40% complete; this work = 70.5% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days "
-    },
-    {
-      "rank": 9,
-      "work_id": "WS/MP220/2024-2025/171199",
-      "mp_name": "Shri Derek O' Brien",
-      "state": "West Bengal",
-      "sanction_amount": 73500000.0,
-      "risk_score": 94.4,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Finance] 96% spent vs 40% complete; this work = 99.0% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days "
-    },
-    {
-      "rank": 10,
       "work_id": "WS/MP18201/2024-2025/141045",
       "mp_name": "Neeraj Maurya",
       "state": "Uttar Pradesh",
       "sanction_amount": 46470400.0,
-      "risk_score": 94.1,
+      "risk_score": 93.4,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -514,18 +486,46 @@
       "model_reason": "[Finance] this work = 47.5% of MP annual budget | [Vendor] Vendor 'SHRI GURU KRIPA NARSINGH ASSOCIATES' received 60.6% of MP spend | [Compli"
     },
     {
-      "rank": 11,
-      "work_id": "WS/MP18098/2024-2025/180436",
-      "mp_name": "Bharti Pardhi",
-      "state": "Madhya Pradesh",
-      "sanction_amount": 2500000.0,
-      "risk_score": 93.5,
+      "rank": 9,
+      "work_id": "WS/MP218/2024-2025/171165",
+      "mp_name": "Ms. Dola Sen",
+      "state": "West Bengal",
+      "sanction_amount": 67500000.0,
+      "risk_score": 93.4,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
-      "model_reason": "[Finance] 100% spent vs 40% complete | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate byp"
+      "model_reason": "[Finance] 97% spent vs 40% complete; this work = 70.5% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days "
+    },
+    {
+      "rank": 10,
+      "work_id": "WS/MP220/2024-2025/171199",
+      "mp_name": "Shri Derek O' Brien",
+      "state": "West Bengal",
+      "sanction_amount": 73500000.0,
+      "risk_score": 93.4,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
+      ],
+      "model_reason": "[Finance] 96% spent vs 40% complete; this work = 99.0% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days "
+    },
+    {
+      "rank": 11,
+      "work_id": "WS/MP544/2025-2026/155247",
+      "mp_name": "Mr Gopal Jee Thakur",
+      "state": "Bihar",
+      "sanction_amount": 495000.0,
+      "risk_score": 92.6,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "GFR 2017 Rules 149/155: Sanction \u20b9495,000 in tender evasion band"
+      ],
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'BIOLUNAR ENERGY SOLUTION' received 94.8% of MP spend | [Compliance] Stalled executio"
     },
     {
       "rank": 12,
@@ -533,7 +533,7 @@
       "mp_name": "Bharti Pardhi",
       "state": "Madhya Pradesh",
       "sanction_amount": 2500000.0,
-      "risk_score": 93.5,
+      "risk_score": 92.3,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
@@ -543,115 +543,116 @@
     },
     {
       "rank": 13,
+      "work_id": "WS/MP18098/2024-2025/180436",
+      "mp_name": "Bharti Pardhi",
+      "state": "Madhya Pradesh",
+      "sanction_amount": 2500000.0,
+      "risk_score": 92.3,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
+      ],
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate byp"
+    },
+    {
+      "rank": 14,
+      "work_id": "WS/MP544/2025-2026/155248",
+      "mp_name": "Mr Gopal Jee Thakur",
+      "state": "Bihar",
+      "sanction_amount": 495000.0,
+      "risk_score": 92.0,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "GFR 2017 Rules 149/155: Sanction \u20b9495,000 in tender evasion band"
+      ],
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'BIOLUNAR ENERGY SOLUTION' received 94.8% of MP spend | [Compliance] Stalled executio"
+    },
+    {
+      "rank": 15,
+      "work_id": "WS/MP544/2025-2026/176647",
+      "mp_name": "Mr Gopal Jee Thakur",
+      "state": "Bihar",
+      "sanction_amount": 495000.0,
+      "risk_score": 92.0,
+      "risk_label": "CRITICAL",
+      "is_verified": true,
+      "statutory_violations": [
+        "GFR 2017 Rules 149/155: Sanction \u20b9495,000 in tender evasion band"
+      ],
+      "model_reason": "[Finance] 100% spent vs 40% complete | [Vendor] Vendor 'BIOLUNAR ENERGY SOLUTION' received 94.8% of MP spend | [Compliance] Stalled executio"
+    },
+    {
+      "rank": 16,
       "work_id": "WS/MP839/2024-2025/134187",
       "mp_name": "Shri Gulam Ali",
       "state": "Jammu And Kashmir",
       "sanction_amount": 19925990.0,
-      "risk_score": 92.7,
+      "risk_score": 91.5,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
-      "model_reason": "[Finance] stalled 752 days; this work = 14.1% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranch"
+      "model_reason": "[Finance] stalled 756 days; this work = 14.1% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranch"
     },
     {
-      "rank": 14,
-      "work_id": "WS/MP187/2024-2025/145576",
-      "mp_name": "Shri Javed Ali Khan",
-      "state": "Uttar Pradesh",
-      "sanction_amount": 14999000.0,
-      "risk_score": 91.9,
+      "rank": 17,
+      "work_id": "WS/MP163/2024-2025/136109",
+      "mp_name": "Shri R. Girirajan",
+      "state": "Tamil Nadu",
+      "sanction_amount": 999800.0,
+      "risk_score": 91.4,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
+        "MoSPI Completion Guidelines: Work completed but no photo proof uploaded",
+        "GFR 2017 Rules 149/155: Sanction \u20b9999,800 in tender evasion band"
       ],
-      "model_reason": "[Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate bypassed); Stalled execution: funds disbur"
+      "model_reason": "[Vendor] Vendor 'JF JAVID HUSSAIN' received 57.2% of MP spend | [Compliance] Work marked Completed but no photo evidence uploaded; Stalled e"
     },
     {
-      "rank": 15,
+      "rank": 18,
       "work_id": "WS/MP198/2024-2025/135729",
       "mp_name": "Shri Ramji",
       "state": "Uttar Pradesh",
       "sanction_amount": 14150000.0,
-      "risk_score": 91.9,
+      "risk_score": 90.7,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
       "model_reason": "[Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate bypassed); Stalled execution: funds disbur"
-    },
-    {
-      "rank": 16,
-      "work_id": "WS/MP190/2024-2025/135992",
-      "mp_name": "Shri Mithlesh Kumar",
-      "state": "Uttar Pradesh",
-      "sanction_amount": 31590000.0,
-      "risk_score": 91.7,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Finance] stalled 734 days; this work = 18.4% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranch"
-    },
-    {
-      "rank": 17,
-      "work_id": "WS/MP885/2024-2025/137239",
-      "mp_name": "Shri Sadanand Mhalu Shet Tanavade",
-      "state": "Goa",
-      "sanction_amount": 2767056.99,
-      "risk_score": 91.3,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate bypassed); Stalled execution: funds disbur"
-    },
-    {
-      "rank": 18,
-      "work_id": "WS/MP190/2024-2025/144137",
-      "mp_name": "Shri Mithlesh Kumar",
-      "state": "Uttar Pradesh",
-      "sanction_amount": 17739000.0,
-      "risk_score": 90.8,
-      "risk_label": "CRITICAL",
-      "is_verified": true,
-      "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
-      ],
-      "model_reason": "[Finance] this work = 10.3% of MP annual budget | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilizati"
     },
     {
       "rank": 19,
-      "work_id": "WS/MP18161/2024-2025/138076",
-      "mp_name": "Sanjna Jatav",
-      "state": "Rajasthan",
-      "sanction_amount": 400000.0,
-      "risk_score": 90.8,
+      "work_id": "WS/MP187/2024-2025/145576",
+      "mp_name": "Shri Javed Ali Khan",
+      "state": "Uttar Pradesh",
+      "sanction_amount": 14999000.0,
+      "risk_score": 90.7,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
         "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
       ],
-      "model_reason": "[Finance] 100% spent vs 40% complete | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate byp"
+      "model_reason": "[Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate bypassed); Stalled execution: funds disbur"
     },
     {
       "rank": 20,
-      "work_id": "WS/MP18161/2024-2025/140182",
-      "mp_name": "Sanjna Jatav",
-      "state": "Rajasthan",
-      "sanction_amount": 300000.0,
-      "risk_score": 90.8,
+      "work_id": "WS/MP650/2024-2025/184591",
+      "mp_name": "Shankar Lalwani",
+      "state": "Madhya Pradesh",
+      "sanction_amount": 998100.0,
+      "risk_score": 90.7,
       "risk_label": "CRITICAL",
       "is_verified": true,
       "statutory_violations": [
-        "MPLADS Clause 4.3: Tranche 2 released <=7 days of Tranche 1 (75% gate bypassed)"
+        "GFR 2017 Rules 149/155: Sanction \u20b9998,100 in tender evasion band"
       ],
-      "model_reason": "[Finance] 100% spent vs 40% complete | [Compliance] Clause 4.3 violation: Tranche 2 released <=7 days of Tranche 1 (75% utilization gate byp"
+      "model_reason": "[Finance] 87% spent vs 40% complete | [Vendor] Vendor 'SHRI GANESH ASSOCIATES PROPRIETOR NARAYA' received 56.6% of MP spend | [Compliance] S"
     }
   ],
   "judge_talking_points": [

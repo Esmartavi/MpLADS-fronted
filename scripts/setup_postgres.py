@@ -121,11 +121,14 @@ def setup_database(db_url: str):
         print("[!] Error: 'psycopg2' not found. Run: pip install psycopg2-binary")
         sys.exit(1)
 
-    # Encode password if special chars like @ are present
     clean_url = db_url.strip()
     print(f"[*] Connecting to PostgreSQL at Supabase/Cloud...")
     try:
-        conn = psycopg2.connect(clean_url)
+        ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if ROOT_DIR not in sys.path:
+            sys.path.insert(0, ROOT_DIR)
+        from scripts.db_helper import get_db_connection
+        conn = get_db_connection(clean_url)
         conn.autocommit = True
         cur = conn.cursor()
     except Exception as e:

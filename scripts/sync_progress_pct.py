@@ -44,11 +44,6 @@ if os.path.exists(flags_path):
     print(df.groupby(['work_status', 'progress_pct']).size())
 
 # 2. Update Supabase works table
-db_url = os.getenv("DATABASE_URL")
-if not db_url:
-    print("[!] DATABASE_URL not set.")
-    sys.exit(1)
-
 san_path = os.path.join("data", "processed", "clean_sanctioned.csv")
 if not os.path.exists(san_path):
     print(f"[!] {san_path} not found.")
@@ -61,7 +56,12 @@ san = san.dropna(subset=['work_id'])
 records = [(float(pct), str(wid)) for wid, pct in zip(san['work_id'], san['progress_pct'])]
 
 print(f"[*] Updating progress_pct for {len(records):,} works in Supabase PostgreSQL...")
-conn = psycopg2.connect(db_url)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from scripts.db_helper import get_db_connection
+conn = get_db_connection()
 conn.autocommit = True
 cur = conn.cursor()
 

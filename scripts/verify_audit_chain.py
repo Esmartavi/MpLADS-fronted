@@ -1,11 +1,16 @@
 import os
+import sys
 import hashlib
 import datetime
-import psycopg2
 from dotenv import load_dotenv
 
-load_dotenv()
-conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from scripts.db_helper import get_db_connection
+
+conn = get_db_connection()
 conn.autocommit = True
 cur = conn.cursor()
 

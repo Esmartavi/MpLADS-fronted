@@ -12,15 +12,14 @@ import psycopg2
 from psycopg2.extras import execute_values, Json
 from dotenv import load_dotenv
 
-load_dotenv()
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
-DB_URL = os.getenv("DATABASE_URL")
-if not DB_URL:
-    print("[!] DATABASE_URL not found in .env")
-    sys.exit(1)
+from scripts.db_helper import get_db_connection
 
 print("[*] Connecting to Supabase PostgreSQL...")
-conn = psycopg2.connect(DB_URL)
+conn = get_db_connection()
 conn.autocommit = True
 cur = conn.cursor()
 

@@ -15,18 +15,25 @@ import {
   AlertTriangle, 
   Search,
   Mail,
-  HelpCircle
+  HelpCircle,
+  Radio,
+  Cpu,
+  Sparkles,
+  KeyRound,
+  ChevronDown,
+  Layers
 } from 'lucide-react';
 import { api } from '../services/api';
+import emblemLogo from '../assets/logo_dark.jpg';
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAuthSuccess, activeRole }) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) {
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
   const [selectedRole, setSelectedRole] = useState('ministry');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Dynamic Options from dataset
+  // Dynamic Options from backend dataset
   const [authOptions, setAuthOptions] = useState({
     states: [],
     districts_by_state: {},
@@ -54,11 +61,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
     clearance_code: ''
   });
 
-  // MP filters
+  // MP filters for signup
   const [mpSearch, setMpSearch] = useState('');
-  const [loginMpSearch, setLoginMpSearch] = useState('');
-  const [loginMpState, setLoginMpState] = useState('');
-  const [loginSelectedMp, setLoginSelectedMp] = useState('');
 
   useEffect(() => {
     setMode(initialMode);
@@ -84,7 +88,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
 
   if (!isOpen) return null;
 
-  // Available districts for the currently chosen state
+  // Available districts for chosen state
   const currentDistricts = (authOptions.districts_by_state && signupForm.state)
     ? (authOptions.districts_by_state[signupForm.state] || [])
     : [];
@@ -95,13 +99,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
     const matchHouse = !signupForm.house || m.house.toLowerCase() === signupForm.house.toLowerCase();
     const matchQuery = !mpSearch || m.name.toLowerCase().includes(mpSearch.toLowerCase()) || (m.constituency && m.constituency.toLowerCase().includes(mpSearch.toLowerCase()));
     return matchState && matchHouse && matchQuery;
-  });
-
-  // Filtered MPs for Login MP Directory
-  const filteredLoginMps = (authOptions.mps || []).filter(m => {
-    const matchState = !loginMpState || m.state.toLowerCase() === loginMpState.toLowerCase();
-    const matchQuery = !loginMpSearch || m.name.toLowerCase().includes(loginMpSearch.toLowerCase()) || (m.constituency && m.constituency.toLowerCase().includes(loginMpSearch.toLowerCase()));
-    return matchState && matchQuery;
   });
 
   const handleStateChange = (newState) => {
@@ -127,13 +124,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
       if (onAuthSuccess) onAuthSuccess(user);
       onClose();
     } catch (err) {
-      setError(err.message || 'Invalid official credentials. Please verify and try again.');
+      setError(err.message || 'Invalid official credentials. Please verify your identity.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Sign Up submit with strict validation
+  // Sign Up submit with validation
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -147,7 +144,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
       return;
     }
 
-    // Mandatory Email Check
     const cleanEmail = signupForm.email.trim();
     if (!cleanEmail) {
       setError('Official email address is mandatory for registration');
@@ -155,11 +151,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
-      setError('Please enter a valid official email address (e.g. official@mospi.gov.in or official@nic.in)');
+      setError('Please enter a valid official email address (e.g. official@mospi.gov.in or @nic.in)');
       return;
     }
 
-    // Password Complexity: >=8 chars, at least 1 letter, 1 number, 1 special character
     const pwd = signupForm.password;
     if (pwd.length < 8) {
       setError('Password must be at least 8 characters long');
@@ -183,7 +178,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
       return;
     }
 
-    // Role-specific checks
     if (selectedRole === 'state' && !signupForm.state) {
       setError('Please select your designated State / Union Territory jurisdiction');
       return;
@@ -222,117 +216,139 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
     }
   };
 
-  const roleTypes = [
-    {
-      id: 'ministry',
-      title: 'MoSPI Ministry Official',
-      badge: 'National Directorate',
-      desc: 'Central Vigilance, policy enforcement & pan-India statutory oversight (All 36 States/UTs)',
+  // Metadata for the tier dropdown selector
+  const roleDescriptions = {
+    ministry: {
+      title: 'MoSPI Ministry Directorate',
+      badgeText: 'CENTRAL VIGILANCE • LEVEL-5',
+      badge: 'bg-violet-500/20 text-violet-300 border-violet-500/40',
       icon: Landmark,
-      color: 'from-violet-500/20 to-purple-600/10 border-violet-500/30 text-violet-400'
+      desc: 'Central Ministry Directorate with Pan-India statutory oversight across all 36 States and Union Territories.'
     },
-    {
-      id: 'state',
+    state: {
       title: 'State Nodal Authority',
-      badge: 'State Nodal Jurisdiction',
-      desc: 'State-level oversight, milestone releases & district fund compliance tracking',
+      badgeText: 'STATE JURISDICTION • LEVEL-4',
+      badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
       icon: Building2,
-      color: 'from-cyan-500/20 to-sky-600/10 border-cyan-500/30 text-cyan-400'
+      desc: 'State-level executive authority managing milestone fund releases, compliance, and district vigilance.'
     },
-    {
-      id: 'district',
-      title: 'District Authority',
-      badge: 'District Magistrate / IDA',
-      desc: 'Ground execution, contractor sanctions & physical photo verification audits',
+    district: {
+      title: 'District Authority / Magistrate (IDA)',
+      badgeText: 'GROUND SANCTION • LEVEL-3',
+      badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
       icon: MapPin,
-      color: 'from-emerald-500/20 to-teal-600/10 border-emerald-500/30 text-emerald-400'
+      desc: 'Ground execution, contractor vetting, site photo evidence verification, and treasury disbursement warrants.'
     },
-    {
-      id: 'mp',
-      title: 'Member of Parliament',
-      badge: 'Constituency Level',
-      desc: 'Lok Sabha & Rajya Sabha parliamentary fund audit, sanctions & vendor watch',
+    mp: {
+      title: 'Member of Parliament (Lok Sabha / Rajya Sabha)',
+      badgeText: 'PARLIAMENTARY WATCHDOG',
+      badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
       icon: Vote,
-      color: 'from-amber-500/20 to-yellow-600/10 border-amber-500/30 text-amber-400'
+      desc: 'Parliamentary constituency recommendations, contractor syndicate watch, and public expenditure monitoring.'
     }
-  ];
+  };
+
+  const currentRoleMeta = roleDescriptions[selectedRole] || roleDescriptions.ministry;
+  const RoleIcon = currentRoleMeta.icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-[#03050c]/85 backdrop-blur-2xl animate-in fade-in duration-200 font-sans">
+      
+      {/* Modal Card Styled with Landing Page Violet Theme */}
       <div 
-        className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl text-slate-100 flex flex-col no-scrollbar"
+        className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-3xl bg-[#060913] border border-violet-500/30 shadow-2xl shadow-violet-950/40 text-slate-100 flex flex-col no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Header Ribbon */}
-        <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-sky-600/10 border border-cyan-500/30 text-cyan-400 shadow-glow-cyan">
-              <ShieldCheck className="w-5 h-5" />
+        {/* National Tricolor Top Line */}
+        <div className="tricolor-stripe w-full h-[3px]" />
+
+        {/* Ambient Holographic Glows matching Landing Page */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-36 bg-gradient-to-b from-violet-600/25 via-indigo-600/15 to-transparent blur-3xl pointer-events-none -z-10" />
+        <div className="cyber-grid absolute inset-0 opacity-20 pointer-events-none -z-10" />
+
+        {/* Top Header Section */}
+        <div className="sticky top-0 z-20 px-6 py-4 bg-[#060913]/95 border-b border-slate-800/90 backdrop-blur-xl flex items-center justify-between">
+          <div className="flex items-center space-x-3.5">
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden p-0.5 border border-violet-500/40 bg-[#0b1022] flex-shrink-0 shadow-lg shadow-violet-500/20">
+              <img src={emblemLogo} alt="Emblem" className="w-full h-full object-cover rounded-xl" />
+              <div className="absolute inset-0 bg-violet-400/10 pointer-events-none" />
             </div>
             <div>
-              <div className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
-                भारत सरकार // MoSPI National Vigilance Portal
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-mono tracking-widest text-slate-400 uppercase font-semibold">
+                  भारत सरकार // MoSPI DIID
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-md font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LEVEL-5 SECURE
+                </span>
               </div>
-              <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                BHARAT-DRISHTI Access Control
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight font-display mt-0.5">
+                BHARAT-DRISHTI Command Access
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-700 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Mode Selector Tabs */}
-        <div className="flex border-b border-slate-800 px-6 pt-4 bg-slate-900">
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setError(null); }}
-            className={`pb-3 text-sm font-semibold border-b-2 mr-6 transition-all ${
-              mode === 'login'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Sign In to Account
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('signup'); setError(null); }}
-            className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
-              mode === 'signup'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Register New Government Official
-          </button>
+        {/* Mode Selector Toggle Styled as Landing Page Tabs */}
+        <div className="px-6 pt-5 pb-2 bg-[#060913]">
+          <div className="p-1 rounded-2xl bg-[#04060d] border border-slate-800/90 grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => { setMode('login'); setError(null); }}
+              className={`py-3 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider font-display transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                mode === 'login'
+                  ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
+              }`}
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>Authenticate Official</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode('signup'); setError(null); }}
+              className={`py-3 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider font-display transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                mode === 'signup'
+                  ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Register New Official</span>
+            </button>
+          </div>
         </div>
 
         {/* Error Banner */}
         {error && (
-          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-400" />
-            <span>{error}</span>
+          <div className="mx-6 mt-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-center gap-3 animate-in fade-in">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
+            <span className="font-medium font-sans">{error}</span>
           </div>
         )}
 
+        {/* Form Body */}
         <div className="p-6">
           {mode === 'login' ? (
             /* ─────────────────────────────────────────────────────────────
-               SIGN IN FORM
+               AUTHENTIC SIGN IN FORM (Clean, Theme of Landing Page)
             ───────────────────────────────────────────────────────────── */
             <form onSubmit={handleLoginSubmit} className="space-y-4">
+              
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Official Username, Email or Member of Parliament
+                <label className="block text-sm font-bold uppercase tracking-wider text-slate-200 mb-2 font-mono">
+                  Official Username, Email or MP Name <span className="text-rose-400">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     required
@@ -341,18 +357,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                       setLoginForm({ ...loginForm, username: e.target.value });
                       if (error) setError(null);
                     }}
-                    placeholder="Enter registered username, email, or MP name"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    placeholder="Enter registered official username, email, or MP name"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-[#040714] border border-slate-700/90 text-white placeholder-slate-500 text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all font-sans"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Password
+                <label className="block text-sm font-bold uppercase tracking-wider text-slate-200 mb-2 font-mono flex items-center justify-between">
+                  <span>Secure Password <span className="text-rose-400">*</span></span>
+                  <span className="text-xs text-slate-400 font-mono">Confidential</span>
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
@@ -361,166 +378,114 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                       setLoginForm({ ...loginForm, password: e.target.value });
                       if (error) setError(null);
                     }}
-                    placeholder="Enter account password"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    placeholder="Enter official credentials password"
+                    className="w-full pl-11 pr-11 py-3.5 rounded-xl bg-[#040714] border border-slate-700/90 text-white placeholder-slate-500 text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition-all font-sans"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* MP Directory Lookup Helper on Login Tab */}
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-amber-400 flex items-center gap-1.5">
-                    <Vote className="w-3.5 h-3.5" />
-                    Member of Parliament Directory (774 Official MPs)
-                  </span>
-                  <span className="text-[10px] text-slate-500">Fast MP Selection</span>
+              {/* Statutory Information Card */}
+              <div className="p-4 rounded-2xl bg-[#040714]/90 border border-violet-500/20 flex items-start space-x-3">
+                <ShieldCheck className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
+                <div className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                  Access to Bharat-Drishti is restricted to authorized MoSPI officers, State Nodal Authorities, District Magistrates, and Members of Parliament under GFR 2017 &amp; statutory vigilance protocols.
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <select
-                    value={loginMpState}
-                    onChange={(e) => setLoginMpState(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs"
-                  >
-                    <option value="">-- All States & UTs ({authOptions.mps.length} MPs) --</option>
-                    {authOptions.states.map(st => {
-                      const count = (authOptions.mps || []).filter(m => m.state.toLowerCase() === st.toLowerCase()).length;
-                      return (
-                        <option key={st} value={st}>{st} ({count} MPs)</option>
-                      );
-                    })}
-                  </select>
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500" />
-                    <input
-                      type="text"
-                      value={loginMpSearch}
-                      onChange={(e) => setLoginMpSearch(e.target.value)}
-                      placeholder="Search MP name..."
-                      className="w-full pl-7 pr-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs"
-                    />
-                  </div>
-                </div>
-                <select
-                  value={loginSelectedMp}
-                  onChange={(e) => {
-                    const chosen = e.target.value;
-                    setLoginSelectedMp(chosen);
-                    if (chosen) {
-                      setLoginForm(prev => ({ ...prev, username: chosen }));
-                      if (error) setError(null);
-                    }
-                  }}
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-xs focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">-- Select Member of Parliament from Directory ({filteredLoginMps.length} Available) --</option>
-                  {filteredLoginMps.map(m => (
-                    <option key={m.name} value={m.name}>
-                      {m.name} — {m.constituency ? `${m.constituency}, ` : ''}{m.state} ({m.house})
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-slate-500">
-                  Selecting an MP automatically fills your username field above.
-                </p>
               </div>
 
+              {/* Submit Button styled as Landing Page Primary Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-semibold text-sm transition-all shadow-glow-cyan active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full mt-2 py-4 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold font-display text-sm sm:text-base uppercase tracking-wider transition-all shadow-xl shadow-violet-500/30 active:scale-[0.99] flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <span>Authenticating Official...</span>
                 ) : (
                   <>
-                    <span>Authenticate & Access Portal</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ShieldCheck className="w-5 h-5 text-white" />
+                    <span>Authorize &amp; Enter Command Centre</span>
+                    <ArrowRight className="w-5 h-5 text-white" />
                   </>
                 )}
               </button>
 
-              <div className="pt-2 text-center text-xs text-slate-500">
+              <div className="pt-2 text-center text-sm text-slate-400 font-sans">
                 Don't have an official account?{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('signup'); setError(null); }}
-                  className="text-cyan-400 hover:underline font-semibold"
+                  className="text-violet-400 hover:text-violet-300 hover:underline font-bold font-mono cursor-pointer ml-1"
                 >
-                  Register New Official
+                  Register Official Credentials
                 </button>
               </div>
             </form>
           ) : (
             /* ─────────────────────────────────────────────────────────────
-               SIGN UP FORM (4 Government Tiers)
+               SIGN UP FORM (With Government Tier DROPDOWN)
             ───────────────────────────────────────────────────────────── */
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               
-              {/* Step 1: User Role Selection */}
+              {/* Step 1: User Role Selection — As a Sleek DROPDOWN */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                  Select Government Official Tier
+                <label className="block text-sm font-bold uppercase tracking-wider text-slate-200 mb-2 font-mono flex items-center justify-between">
+                  <span>Select Official Government Tier <span className="text-rose-400">*</span></span>
+                  <span className="text-xs text-violet-400 font-mono">Role Clearance</span>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {roleTypes.map(rt => {
-                    const Icon = rt.icon;
-                    const isSelected = selectedRole === rt.id;
-                    return (
-                      <button
-                        key={rt.id}
-                        type="button"
-                        onClick={() => setSelectedRole(rt.id)}
-                        className={`p-3 rounded-xl text-left border transition-all flex items-start space-x-3 ${
-                          isSelected
-                            ? 'bg-slate-800/90 border-cyan-400 ring-1 ring-cyan-400/50 shadow-sm'
-                            : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'
-                        }`}
-                      >
-                        <div className={`p-2 rounded-lg border ${rt.color}`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-xs text-white">{rt.title}</span>
-                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />}
-                          </div>
-                          <div className="text-[10px] text-cyan-400/80 font-mono">{rt.badge}</div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-2 leading-tight">
-                            {rt.desc}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none">
+                    <RoleIcon className="w-4 h-4" />
+                  </div>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="w-full pl-11 pr-10 py-3.5 rounded-xl bg-[#040714] border border-slate-700/90 text-white font-medium text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 appearance-none cursor-pointer font-sans"
+                  >
+                    <option value="ministry">MoSPI Ministry Directorate (Pan-India Central Oversight)</option>
+                    <option value="state">State Nodal Authority (State Jurisdiction &amp; Planning)</option>
+                    <option value="district">District Authority (District Magistrate / IDA)</option>
+                    <option value="mp">Member of Parliament (Lok Sabha / Rajya Sabha)</option>
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+
+                {/* Active Role Description Pill */}
+                <div className="mt-2.5 p-3 rounded-xl bg-[#040714]/80 border border-violet-500/20 flex items-center gap-3">
+                  <span className={`px-2.5 py-1 rounded text-xs font-mono font-bold border flex-shrink-0 ${currentRoleMeta.badge}`}>
+                    {currentRoleMeta.badgeText}
+                  </span>
+                  <span className="text-slate-300 text-xs sm:text-sm truncate font-sans">
+                    {currentRoleMeta.desc}
+                  </span>
                 </div>
               </div>
 
-              {/* Step 2: Role-Specific Dropdowns & Jurisdiction (Hidden for Pan-India Ministry Official) */}
+              {/* Step 2: Role-Specific Jurisdiction Dropdowns */}
               {selectedRole !== 'ministry' && (
-                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" />
-                    Jurisdiction & Official Assignment
+                <div className="p-4 rounded-2xl bg-[#040714]/90 border border-violet-500/20 space-y-3.5">
+                  <div className="text-xs sm:text-sm font-mono uppercase tracking-wider text-violet-400 font-bold flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Official Assignment &amp; Jurisdiction
                   </div>
 
                   {/* State Nodal & District Authority: State Select */}
                   {(selectedRole === 'state' || selectedRole === 'district') && (
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Designated State / Union Territory ({authOptions.states.length} States & UTs Available) <span className="text-rose-400">*</span>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
+                        Designated State / Union Territory ({authOptions.states.length} States &amp; UTs) <span className="text-rose-400">*</span>
                       </label>
                       <select
                         value={signupForm.state}
                         onChange={(e) => handleStateChange(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans cursor-pointer"
                       >
                         <option value="">-- Choose State / UT ({authOptions.states.length} Available) --</option>
                         {authOptions.states.map(st => {
@@ -538,89 +503,76 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                   {/* District Authority: IDA District Select */}
                   {selectedRole === 'district' && (
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                         Implementing District Authority (IDA - {currentDistricts.length} Official Districts) <span className="text-rose-400">*</span>
                       </label>
                       <select
                         value={signupForm.ida}
                         onChange={(e) => setSignupForm({ ...signupForm, ida: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans cursor-pointer"
                       >
                         <option value="">-- Choose Implementing District Authority ({currentDistricts.length} Available) --</option>
                         {currentDistricts.map(dist => (
                           <option key={dist} value={dist}>{dist}</option>
                         ))}
                       </select>
-                      <p className="text-[10px] text-cyan-400 font-mono mt-1">
-                        Showing all {currentDistricts.length} official implementing districts in {signupForm.state || 'selected state'}.
-                      </p>
                     </div>
                   )}
 
-                  {/* Member of Parliament (MP): House + State + Search + Member Selector */}
+                  {/* MP: House + State + Search + Member Selector */}
                   {selectedRole === 'mp' && (
-                    <div className="space-y-2.5">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">
-                            Filter by State / UT
+                          <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1 font-mono">
+                            State / UT
                           </label>
                           <select
                             value={signupForm.state}
                             onChange={(e) => setSignupForm({ ...signupForm, state: e.target.value })}
-                            className="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                            className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs sm:text-sm font-sans cursor-pointer"
                           >
-                            <option value="">-- All States & UTs (Pan-India) --</option>
-                            {authOptions.states.map(st => {
-                              const stateMps = (authOptions.mps || []).filter(m => {
-                                const matchState = m.state.toLowerCase() === st.toLowerCase();
-                                const matchHouse = !signupForm.house || m.house.toLowerCase() === signupForm.house.toLowerCase();
-                                return matchState && matchHouse;
-                              });
-                              const houseLabel = signupForm.house === 'LS' ? 'Lok Sabha MPs' : signupForm.house === 'RS' ? 'Rajya Sabha MPs' : 'MPs';
-                              return (
-                                <option key={st} value={st}>
-                                  {st} ({stateMps.length} {houseLabel})
-                                </option>
-                              );
-                            })}
+                            <option value="">-- All States (Pan-India) --</option>
+                            {authOptions.states.map(st => (
+                              <option key={st} value={st}>{st}</option>
+                            ))}
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">
-                            Parliamentary House
+                          <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1 font-mono">
+                            House
                           </label>
                           <select
                             value={signupForm.house}
                             onChange={(e) => setSignupForm({ ...signupForm, house: e.target.value })}
-                            className="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                            className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs sm:text-sm font-sans cursor-pointer"
                           >
-                            <option value="">All Houses (LS & RS)</option>
-                            <option value="LS">Lok Sabha (House of the People)</option>
-                            <option value="RS">Rajya Sabha (Council of States)</option>
+                            <option value="">All Houses (LS &amp; RS)</option>
+                            <option value="LS">Lok Sabha (LS)</option>
+                            <option value="RS">Rajya Sabha (RS)</option>
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">
-                            Search MP Name / Constituency
+                          <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1 font-mono">
+                            Filter Name
                           </label>
                           <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                               type="text"
                               value={mpSearch}
                               onChange={(e) => setMpSearch(e.target.value)}
-                              placeholder="Filter list..."
-                              className="w-full pl-8 pr-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                              placeholder="Search MP..."
+                              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs sm:text-sm font-sans placeholder:text-slate-500"
                             />
                           </div>
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                           Select Member of Parliament <span className="text-rose-400">*</span>
                         </label>
                         <select
@@ -635,7 +587,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                               state: mpObj && mpObj.state ? mpObj.state : signupForm.state
                             });
                           }}
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                          className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans cursor-pointer"
                         >
                           <option value="">-- Choose Member of Parliament ({filteredMps.length} Available) --</option>
                           {filteredMps.map(m => (
@@ -644,11 +596,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                             </option>
                           ))}
                         </select>
-                        <p className="text-[10px] text-cyan-400/90 font-mono mt-1">
-                          {signupForm.state
-                            ? `Showing all ${filteredMps.length} MPs for ${signupForm.state}${signupForm.house ? ` (${signupForm.house === 'LS' ? 'Lok Sabha' : 'Rajya Sabha'})` : ''}.`
-                            : `Showing all ${filteredMps.length} official Lok Sabha & Rajya Sabha MPs nationwide.`}
-                        </p>
                       </div>
                     </div>
                   )}
@@ -656,9 +603,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
               )}
 
               {/* Step 3: Identity & Credentials */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                     Official Full Name <span className="text-rose-400">*</span>
                   </label>
                   <input
@@ -667,12 +614,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                     value={signupForm.name}
                     onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
                     placeholder="e.g. Dr. Arvind Sharma"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040714] border border-slate-700/80 text-white text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans placeholder-slate-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                     Username <span className="text-rose-400">*</span>
                   </label>
                   <input
@@ -681,35 +628,35 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                     value={signupForm.username}
                     onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
                     placeholder="e.g. arvind_sharma"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    className="w-full px-4 py-3 rounded-xl bg-[#040714] border border-slate-700/80 text-white text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans placeholder-slate-500"
                   />
                 </div>
               </div>
 
-              {/* Mandatory Email */}
+              {/* Official Email */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-                  <span>Government / Official Email <span className="text-rose-400">*</span></span>
-                  <span className="text-[10px] text-slate-400 font-mono">Mandatory</span>
+                <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono flex items-center justify-between">
+                  <span>Official Email Address <span className="text-rose-400">*</span></span>
+                  <span className="text-xs text-violet-400 font-mono">Mandatory</span>
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="email"
                     required
                     value={signupForm.email}
                     onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
                     placeholder="e.g. official.name@mospi.gov.in or @nic.in"
-                    className="w-full pl-10 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#040714] border border-slate-700/80 text-white text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans placeholder-slate-500"
                   />
                 </div>
               </div>
 
-              {/* Password & Confirm Password */}
-              <div className="space-y-1.5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Passwords */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                       Password <span className="text-rose-400">*</span>
                     </label>
                     <input
@@ -717,13 +664,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                       required
                       value={signupForm.password}
                       onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                      placeholder="Min 8 chars, letter, number, symbol"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                      placeholder="Min 8 chars, letter, num, symbol"
+                      className="w-full px-4 py-3 rounded-xl bg-[#040714] border border-slate-700/80 text-white text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans placeholder-slate-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5 font-mono">
                       Confirm Password <span className="text-rose-400">*</span>
                     </label>
                     <input
@@ -732,39 +679,41 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                       value={signupForm.confirmPassword}
                       onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
                       placeholder="Re-enter password"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500"
+                      className="w-full px-4 py-3 rounded-xl bg-[#040714] border border-slate-700/80 text-white text-sm sm:text-base focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 font-sans placeholder-slate-500"
                     />
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 pl-1">
-                  <HelpCircle className="w-3 h-3 text-cyan-400 flex-shrink-0" />
-                  <span>Password policy: Minimum 8 characters, at least one letter, one number, and one special character.</span>
+                <div className="text-xs text-slate-400 flex items-center gap-2 pl-1 font-sans">
+                  <HelpCircle className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+                  <span>Policy: Minimum 8 characters with at least one letter, number, and special character.</span>
                 </div>
               </div>
 
+              {/* Submit Button styled as Landing Page Primary Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-semibold text-sm transition-all shadow-glow-cyan active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full mt-3 py-4 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold font-display text-sm sm:text-base uppercase tracking-wider transition-all shadow-xl shadow-violet-500/30 active:scale-[0.99] flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
-                  <span>Registering Official Account...</span>
+                  <span>Registering Credentials...</span>
                 ) : (
                   <>
-                    <span>Register & Access Vigilance System</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ShieldCheck className="w-5 h-5 text-white" />
+                    <span>Register &amp; Access Vigilance Network</span>
+                    <ArrowRight className="w-5 h-5 text-white" />
                   </>
                 )}
               </button>
 
-              <div className="pt-2 text-center text-xs text-slate-500">
+              <div className="pt-2 text-center text-sm text-slate-400 font-sans">
                 Already registered?{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setError(null); }}
-                  className="text-cyan-400 hover:underline font-semibold"
+                  className="text-violet-400 hover:text-violet-300 hover:underline font-bold font-mono cursor-pointer ml-1"
                 >
-                  Sign In Instead
+                  Sign In to Account
                 </button>
               </div>
 
