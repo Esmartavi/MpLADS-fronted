@@ -87,40 +87,40 @@ export default function Sidebar({
           title: 'MoSPI Ministry Official',
           subtitle: 'Central Directorate & Vigilance',
           icon: Landmark,
-          color: 'text-violet-400',
-          badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30'
+          color: 'text-violet-600 dark:text-violet-400',
+          badge: 'bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/30'
         };
       case 'state':
         return {
           title: 'State Nodal Authority',
           subtitle: currentUser?.state ? `${currentUser.state} Jurisdiction` : 'State Planning',
           icon: Building2,
-          color: 'text-cyan-400',
-          badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+          color: 'text-cyan-600 dark:text-cyan-400',
+          badge: 'bg-cyan-100 text-cyan-700 border-cyan-300 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/30'
         };
       case 'district':
         return {
           title: 'District Magistrate',
           subtitle: currentUser?.ida ? `IDA ${currentUser.ida}` : 'District Authority',
           icon: MapPin,
-          color: 'text-emerald-400',
-          badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+          color: 'text-emerald-600 dark:text-emerald-400',
+          badge: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30'
         };
       case 'mp':
         return {
           title: 'Member of Parliament',
           subtitle: currentUser?.mp_name ? currentUser.mp_name : 'Parliamentary Watchdog',
           icon: Vote,
-          color: 'text-amber-400',
-          badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+          color: 'text-amber-600 dark:text-amber-400',
+          badge: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30'
         };
       default:
         return {
           title: 'Authorized Official',
           subtitle: 'National Directorate',
           icon: ShieldCheck,
-          color: 'text-violet-400',
-          badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30'
+          color: 'text-violet-600 dark:text-violet-400',
+          badge: 'bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/30'
         };
     }
   };
@@ -248,9 +248,9 @@ export default function Sidebar({
         </div>
 
         {/* Navigation Items List */}
-        <nav className="flex-1 overflow-y-auto px-2 md:px-2.5 py-3 space-y-1.5 scrollbar-thin">
+        <nav className="flex-1 overflow-y-auto px-2 md:px-2.5 py-2 space-y-1 scrollbar-thin">
           {isExpanded && (
-            <div className="px-3 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 font-mono animate-in fade-in duration-200">
+            <div className="px-3 pb-1.5 pt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono animate-in fade-in duration-200">
               Modules
             </div>
           )}
@@ -266,27 +266,27 @@ export default function Sidebar({
                   setIsMobileOpen(false);
                 }}
                 title={!isExpanded ? item.label : undefined}
-                className={`rounded-xl text-sm font-semibold flex items-center transition-all duration-200 cursor-pointer group ${
+                className={`rounded-xl text-xs sm:text-sm font-semibold flex items-center transition-all duration-200 cursor-pointer group ${
                   isExpanded 
-                    ? 'w-full px-3.5 py-3 justify-between' 
-                    : 'w-11 h-11 mx-auto justify-center p-0'
+                    ? 'w-full px-3 py-2 justify-between' 
+                    : 'w-10 h-10 mx-auto justify-center p-0'
                 } ${
                   isActive
-                    ? 'text-white'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                    ? 'text-white font-bold'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
                 }`}
                 style={isActive ? {
-                  background: 'linear-gradient(135deg, rgba(139,92,246,0.24) 0%, rgba(99,102,241,0.14) 100%)',
-                  border: '1px solid rgba(139,92,246,0.35)',
-                  boxShadow: '0 2px 14px -2px rgba(139,92,246,0.22), inset 0 1px 0 rgba(255,255,255,0.06)'
+                  background: 'linear-gradient(135deg, rgba(139,92,246,0.25) 0%, rgba(99,102,241,0.18) 100%)',
+                  border: '1px solid rgba(139,92,246,0.4)',
+                  boxShadow: '0 2px 12px -2px rgba(139,92,246,0.25)'
                 } : {
                   background: 'transparent',
                   border: '1px solid transparent'
                 }}
               >
-                <div className={`flex items-center ${isExpanded ? 'space-x-3 min-w-0' : 'justify-center'}`}>
-                  <Icon className={`w-5 h-5 flex-shrink-0 transition-all ${
-                    isActive ? 'text-violet-300 scale-105' : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105'
+                <div className={`flex items-center ${isExpanded ? 'space-x-2.5 min-w-0' : 'justify-center'}`}>
+                  <Icon className={`w-4 h-4 flex-shrink-0 transition-all ${
+                    isActive ? 'text-violet-600 dark:text-violet-300 scale-105' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 group-hover:scale-105'
                   }`} />
                   {isExpanded && (
                     <span className="truncate whitespace-nowrap animate-in fade-in duration-200 text-left">{item.label}</span>
@@ -298,35 +298,57 @@ export default function Sidebar({
         </nav>
 
         {/* Verified Official Clearance Authority Badge */}
-        <div className="px-2.5 py-2.5 border-t border-white/[0.04]" style={{ background: 'rgba(0,0,0,0.15)' }}>
+        <div className="px-2.5 py-2 border-t border-slate-200/80 dark:border-white/[0.06]" style={{ background: theme === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.2)' }}>
           {isExpanded ? (
-            <div className="p-3 rounded-xl space-y-2 animate-in fade-in duration-200" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div 
+              className="p-2.5 rounded-xl space-y-1.5 transition-all duration-200 animate-in fade-in duration-200" 
+              style={{ 
+                background: theme === 'light' 
+                  ? 'linear-gradient(135deg, rgba(245,243,255,0.95) 0%, rgba(238,242,255,0.85) 100%)' 
+                  : 'linear-gradient(135deg, rgba(13,21,39,0.85) 0%, rgba(9,14,28,0.9) 100%)',
+                border: theme === 'light' ? '1px solid rgba(139,92,246,0.25)' : '1px solid rgba(139,92,246,0.22)',
+                boxShadow: theme === 'light' ? '0 2px 8px rgba(139,92,246,0.08)' : '0 4px 14px rgba(0,0,0,0.3)'
+              }}
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                   Verified
                 </span>
-                <span className={`text-xs font-mono px-2 py-0.5 rounded-md font-bold border ${roleMeta.badge}`}>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border tracking-wider shadow-xs ${roleMeta.badge}`}>
                   {currentUser?.role?.toUpperCase() || 'OFFICIAL'}
                 </span>
               </div>
               <div className="flex items-center space-x-2.5">
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(139,92,246,0.15)' }}>
+                <div 
+                  className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ 
+                    background: theme === 'light' ? 'rgba(139,92,246,0.12)' : 'rgba(139,92,246,0.18)',
+                    border: theme === 'light' ? '1px solid rgba(139,92,246,0.2)' : '1px solid rgba(139,92,246,0.3)'
+                  }}
+                >
                   <RoleIcon className={`w-3.5 h-3.5 ${roleMeta.color}`} />
                 </div>
                 <div className="truncate min-w-0">
-                  <p className="text-xs sm:text-sm font-bold text-white truncate">{roleMeta.title}</p>
-                  <p className="text-xs text-slate-400 truncate">{roleMeta.subtitle}</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">
+                    {roleMeta.title}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+                    {roleMeta.subtitle}
+                  </p>
                 </div>
               </div>
             </div>
           ) : (
             <div 
-              className="w-11 h-11 mx-auto rounded-xl flex items-center justify-center cursor-pointer transition-transform hover:scale-105" 
+              className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105" 
               title={`Verified: ${roleMeta.title} (${currentUser?.role?.toUpperCase() || 'OFFICIAL'})`}
-              style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.22)' }}
+              style={{ 
+                background: theme === 'light' ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.14)',
+                border: theme === 'light' ? '1px solid rgba(139,92,246,0.25)' : '1px solid rgba(139,92,246,0.22)'
+              }}
             >
-              <RoleIcon className={`w-5 h-5 ${roleMeta.color}`} />
+              <RoleIcon className={`w-4 h-4 ${roleMeta.color}`} />
             </div>
           )}
         </div>
