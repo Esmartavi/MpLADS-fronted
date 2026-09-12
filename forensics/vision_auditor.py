@@ -28,8 +28,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_FILE = os.path.join(ROOT_DIR, ".env")
 
 try:
-    from dotenv import load_dotenv
-    load_dotenv(ENV_FILE)
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv(usecwd=True) or ENV_FILE)
 except Exception:
     pass
 

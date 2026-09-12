@@ -16,11 +16,11 @@ import re
 import json
 import time
 from typing import Dict, Any, Generator, Optional
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 # Ensure environment variables are loaded from root .env
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(ROOT_DIR, ".env"))
+load_dotenv(find_dotenv(usecwd=True) or os.path.join(ROOT_DIR, ".env"))
 
 try:
     from google import genai
