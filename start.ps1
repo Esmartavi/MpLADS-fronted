@@ -6,7 +6,7 @@
 .DESCRIPTION
     Launches all 3 application services with a single command:
       1. FastAPI Backend Server (Uvicorn on http://127.0.0.1:8000)
-      2. Vite Frontend Web App (http://localhost:5173)
+      2. Vite Frontend Web App (http://localhost:3131)
       3. Forensic Audit Pipeline Worker (run_audit_pipeline.py --watch)
 
     Features:
@@ -151,7 +151,8 @@ function Free-Port {
 }
 
 Free-Port 8000 "FastAPI Backend"
-Free-Port 5173 "Vite Frontend"
+Free-Port 3131 "Vite Frontend"
+Free-Port 5173 "Vite Frontend (Legacy)"
 
 # ── 3. Launch Services ────────────────────────────────────────────────────────
 Write-Header "3. Starting All 3 Services (Mode: $Mode)"
@@ -180,8 +181,8 @@ if ($Mode -eq "Windows") {
     Write-Success "Spawned Backend Window (FastAPI / Uvicorn on :8000)"
 
     # 2. Frontend
-    Start-Process powershell -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", "Set-Location '$ScriptDir\frontend'; `$host.UI.RawUI.WindowTitle='[2/3] BHARAT-DRISHTI :: Frontend (Port 5173)'; npm run dev"
-    Write-Success "Spawned Frontend Window (Vite Dev Server on :5173)"
+    Start-Process powershell -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", "Set-Location '$ScriptDir\frontend'; `$host.UI.RawUI.WindowTitle='[2/3] BHARAT-DRISHTI :: Frontend (Port 3131)'; npm run dev"
+    Write-Success "Spawned Frontend Window (Vite Dev Server on :3131)"
 
     # 3. Pipeline Worker
     if (-not $NoWorker) {
@@ -200,7 +201,7 @@ if ($Mode -eq "Windows") {
         -PassThru
     Write-Success "Backend process started (PID: $($backendProc.Id))"
 
-    Write-Info "Starting Frontend Vite Server on http://localhost:5173..."
+    Write-Info "Starting Frontend Vite Server on http://localhost:3131..."
     $frontendProc = Start-Process -FilePath "cmd.exe" `
         -ArgumentList "/c npm run dev" `
         -WorkingDirectory (Join-Path $ScriptDir "frontend") `
@@ -257,7 +258,7 @@ while ($Retry -lt $MaxRetries -and (-not ($BackendHealthy -and $FrontendHealthy)
     # Check Frontend
     if (-not $FrontendHealthy) {
         try {
-            $respFront = Invoke-WebRequest -Uri "http://localhost:5173" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
+            $respFront = Invoke-WebRequest -Uri "http://localhost:3131" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
             if ($respFront.StatusCode -eq 200) {
                 $FrontendHealthy = $true
             }
@@ -274,7 +275,7 @@ if ($BackendHealthy) {
 }
 
 if ($FrontendHealthy) {
-    Write-Success "Frontend UI is LIVE and Healthy:  http://localhost:5173"
+    Write-Success "Frontend UI is LIVE and Healthy:  http://localhost:3131"
 } else {
     Write-Warn "Frontend UI took longer than expected to initialize. Check logs/frontend.err.log"
 }
@@ -282,11 +283,11 @@ if ($FrontendHealthy) {
 # ── 5. Auto-Launch Browser ────────────────────────────────────────────────────
 if (-not $NoBrowser) {
     Write-Header "5. Launching Web Dashboard"
-    Write-Success "Opening http://localhost:5173/ in default web browser..."
+    Write-Success "Opening http://localhost:3131/ in default web browser..."
     try {
-        Start-Process "http://localhost:5173/"
+        Start-Process "http://localhost:3131/"
     } catch {
-        Write-Warn "Could not launch browser automatically. Please open http://localhost:5173 manually."
+        Write-Warn "Could not launch browser automatically. Please open http://localhost:3131 manually."
     }
 }
 
@@ -299,7 +300,7 @@ Write-Host "    SERVICE                        STATUS     URL / ACCESS          
 Write-Host "  ------------------------------------------------------------------------------" -ForegroundColor Green
 Write-Host "    FastAPI Backend API            [ONLINE]   http://127.0.0.1:8000             " -ForegroundColor Green
 Write-Host "    FastAPI Swagger Docs           [ONLINE]   http://127.0.0.1:8000/docs        " -ForegroundColor Green
-Write-Host "    React / Vite Web UI            [ONLINE]   http://localhost:5173             " -ForegroundColor Green
+Write-Host "    React / Vite Web UI            [ONLINE]   http://localhost:3131             " -ForegroundColor Green
 Write-Host "    Forensic Audit Pipeline        [ACTIVE]   Watching images/downloaded_pdfs/  " -ForegroundColor Green
 Write-Host "  ==============================================================================" -ForegroundColor Green
 Write-Host ""
@@ -331,6 +332,7 @@ if ($Mode -eq "Unified") {
         }
         if ($frontendProc -and (-not $frontendProc.HasExited)) {
             Stop-Process -Id $frontendProc.Id -Force -ErrorAction SilentlyContinue
+            Free-Port 3131 "Vite Frontend"
             Free-Port 5173 "Vite Frontend"
             Write-Success "Stopped Frontend Process"
         }

@@ -33,7 +33,8 @@ function Kill-Port-Process {
 
 # 1. Kill by port
 Kill-Port-Process 8000 "FastAPI Backend"
-Kill-Port-Process 5173 "Vite Frontend"
+Kill-Port-Process 3131 "Vite Frontend"
+Kill-Port-Process 5173 "Vite Frontend (Legacy Port)"
 
 # 2. Kill python uvicorn / audit pipeline if still active
 $pythonProcs = Get-CimInstance Win32_Process | Where-Object { 
@@ -48,4 +49,4 @@ foreach ($p in $pythonProcs) {
     } catch {}
 }
 
-Write-Host "`n[OK] All BHARAT-DRISHTI services stopped. Ports 8000 & 5173 are free.`n" -ForegroundColor Green
+Write-Host "`n[OK] All BHARAT-DRISHTI services stopped. Ports 8000 & 3131 are free.`n" -ForegroundColor Green
