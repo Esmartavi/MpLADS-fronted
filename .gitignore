@@ -7,6 +7,9 @@ fraud_summary.txt
 audit_log.db
 mplads_audit.db
 .env
+.ev
+*.env
+frontend/.env
 
 # Frontend build & dependencies
 frontend/node_modules/

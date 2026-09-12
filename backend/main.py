@@ -47,6 +47,10 @@ ROOT_DIR   = os.path.dirname(BASE_DIR)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+# Load environment variables from .env
+from dotenv import load_dotenv
+load_dotenv(os.path.join(ROOT_DIR, ".env"))
+
 FLAGS_FILE = os.path.join(ROOT_DIR, "data", "processed", "fraud_flags.csv")
 if not os.path.exists(FLAGS_FILE):
     FLAGS_FILE = os.path.join(ROOT_DIR, "fraud_flags.csv")
