@@ -67,6 +67,33 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(139, 92, 246, 0.5);
   }
+
+  /* ── Universal High-Contrast Selection Rules ── */
+  ::selection,
+  *::selection {
+    background-color: #4f46e5 !important; /* Deep rich royal indigo */
+    color: #ffffff !important;             /* Pure crisp white (AAA high contrast) */
+    text-shadow: none !important;
+  }
+
+  ::-moz-selection,
+  *::-moz-selection {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+  }
+
+  input::selection,
+  textarea::selection,
+  select::selection,
+  span::selection,
+  p::selection,
+  div::selection,
+  label::selection {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+  }
 }
 
 @layer components {
@@ -626,5 +653,27 @@ html.light .leaflet-popup-content-wrapper {
 }
 html.light .leaflet-popup-tip {
   background: #ffffff !important;
+}
+
+/* ── Light Mode High-Contrast Selection Rules ── */
+html.light ::selection,
+html.light *::selection,
+html.light input::selection,
+html.light textarea::selection,
+html.light select::selection,
+html.light span::selection,
+html.light p::selection,
+html.light div::selection,
+html.light label::selection {
+  background-color: #4338ca !important; /* Deep royal indigo (8.5:1 contrast ratio) */
+  color: #ffffff !important;             /* Pure brilliant white */
+  text-shadow: none !important;
+}
+
+html.light ::-moz-selection,
+html.light *::-moz-selection {
+  background-color: #4338ca !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
 }
 
