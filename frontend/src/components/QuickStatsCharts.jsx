@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -13,7 +13,20 @@ import {
   Legend,
 } from 'recharts';
 
-export default function QuickStatsCharts({ kpis }) {
+const STATIC_STATE_RISK_DATA = [
+  { state: 'Uttar Pradesh', critical: 2883, high: 2229, atRiskCr: 466.0 },
+  { state: 'Punjab', critical: 1902, high: 97, atRiskCr: 90.8 },
+  { state: 'Bihar', critical: 1632, high: 204, atRiskCr: 165.3 },
+  { state: 'Telangana', critical: 1242, high: 31, atRiskCr: 43.4 },
+  { state: 'Tamil Nadu', critical: 1133, high: 83, atRiskCr: 115.3 },
+  { state: 'Odisha', critical: 1116, high: 25, atRiskCr: 35.7 },
+  { state: 'Rajasthan', critical: 704, high: 118, atRiskCr: 55.0 },
+  { state: 'Madhya Pradesh', critical: 686, high: 647, atRiskCr: 87.1 },
+  { state: 'Gujarat', critical: 646, high: 325, atRiskCr: 37.4 },
+  { state: 'Jharkhand', critical: 540, high: 558, atRiskCr: 59.1 },
+];
+
+function QuickStatsCharts({ kpis }) {
   if (!kpis) return null;
 
   const critical_count = kpis.critical_count ?? 15731;
@@ -22,25 +35,14 @@ export default function QuickStatsCharts({ kpis }) {
   const low_count = kpis.low_count ?? 61998;
   const total_works = kpis.total_works || (critical_count + high_count + medium_count + low_count) || 98649;
 
-  const pieData = [
+  const pieData = useMemo(() => [
     { name: 'Critical Risk', value: critical_count, color: '#f43f5e' },
     { name: 'High Risk', value: high_count, color: '#f59e0b' },
     { name: 'Medium Alert', value: medium_count, color: '#8b5cf6' },
     { name: 'Low / Verified', value: low_count, color: '#34d399' },
-  ];
+  ], [critical_count, high_count, medium_count, low_count]);
 
-  const stateRiskData = [
-    { state: 'Uttar Pradesh', critical: 2883, high: 2229, atRiskCr: 466.0 },
-    { state: 'Punjab', critical: 1902, high: 97, atRiskCr: 90.8 },
-    { state: 'Bihar', critical: 1632, high: 204, atRiskCr: 165.3 },
-    { state: 'Telangana', critical: 1242, high: 31, atRiskCr: 43.4 },
-    { state: 'Tamil Nadu', critical: 1133, high: 83, atRiskCr: 115.3 },
-    { state: 'Odisha', critical: 1116, high: 25, atRiskCr: 35.7 },
-    { state: 'Rajasthan', critical: 704, high: 118, atRiskCr: 55.0 },
-    { state: 'Madhya Pradesh', critical: 686, high: 647, atRiskCr: 87.1 },
-    { state: 'Gujarat', critical: 646, high: 325, atRiskCr: 37.4 },
-    { state: 'Jharkhand', critical: 540, high: 558, atRiskCr: 59.1 },
-  ];
+  const stateRiskData = STATIC_STATE_RISK_DATA;
 
   const CustomPieTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -112,9 +114,14 @@ export default function QuickStatsCharts({ kpis }) {
                 cy="50%"
                 innerRadius={65}
                 outerRadius={95}
-                paddingAngle={4}
+                paddingAngle={3}
                 dataKey="value"
                 stroke="none"
+                startAngle={90}
+                endAngle={-270}
+                isAnimationActive={true}
+                animationDuration={600}
+                animationEasing="ease-out"
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.85} />
@@ -195,3 +202,5 @@ export default function QuickStatsCharts({ kpis }) {
     </div>
   );
 }
+
+export default React.memo(QuickStatsCharts);
