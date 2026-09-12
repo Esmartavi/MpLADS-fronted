@@ -279,10 +279,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
                 <span className="text-xs font-mono tracking-widest text-slate-400 uppercase font-semibold">
                   भारत सरकार // MoSPI DIID
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-md font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  LEVEL-5 SECURE
-                </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight font-display mt-0.5">
                 BHARAT-DRISHTI Command Access
