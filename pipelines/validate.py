@@ -1,5 +1,5 @@
 """
-validate.py -- MPLADS Model Validation & Triangulation Engine (Problem Statement 26102)
+validate.py -- MPLADS Model Validation & Triangulation Engine
 
 Comprehensive multi-layer validation framework for SIH Grand Jury defense:
   Approach 1: Rules Engine as Ground Truth (Deterministic Statutory Violation Labels)
@@ -412,7 +412,7 @@ def generate_full_validation_suite(export_json: bool = True, top_n: int = 20) ->
     payload = {
         "metadata": {
             "generated_at": datetime.now().isoformat(),
-            "platform": "Bharat-Drishti AI Forensic Vigilance (MoSPI PS-26102)",
+            "platform": "Bharat-Drishti AI Forensic Vigilance (MoSPI)",
             "total_works_monitored": len(flags)
         },
         "executive_summary": {

@@ -1,6 +1,6 @@
 # 🇮🇳 BHARAT-DRISHTI // THE DEFINITIVE SYSTEM ARCHITECTURE & CODEBASE BIBLE
 ### **National MPLADS AI Vigilance & Anti-Corruption Audit Platform**
-**Smart India Hackathon 2026 | Problem Statement ID: 26102**  
+**Smart India Hackathon 2026 | National MPLADS AI Vigilance Platform**  
 **Ministry of Statistics and Programme Implementation (MoSPI) — Data Informatics & Innovation Division (DIID)**  
 **Official Portal Reference:** [mplads.mospi.gov.in](https://mplads.mospi.gov.in/digigov/dashboard.html)
 
@@ -869,4 +869,4 @@ Verified figures from [`docs/fraud_summary.txt`](file:///c:/Users/shash/OneDrive
 ---
 
 *Document compiled and verified against the complete BHARAT-DRISHTI repository.*  
-*All rights reserved // MoSPI Smart India Hackathon 2026 (PS-26102).*
+*All rights reserved // MoSPI National Vigilance Portal.*

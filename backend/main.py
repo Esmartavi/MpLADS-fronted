@@ -25,10 +25,11 @@ import jwt
 import hashlib
 from datetime import datetime, timedelta
 import json
+import re
 
 app = FastAPI(
     title="MPLADS Fraud & Anomaly Detection API",
-    description="AI/ML monitoring platform for MoSPI's MPLADS scheme — Problem Statement 26102",
+    description="AI/ML monitoring platform for MoSPI's MPLADS scheme",
     version="2.2"
 )
 
@@ -98,29 +99,34 @@ DEMO_USERS = {
         "password_hash": hash_password("Ministry@2026"),
         "role": "ministry",
         "name": "MoSPI Ministry Official",
+        "designation": "Central Vigilance & National Oversight Directorate",
     },
     "state_nodal_up": {
         "password_hash": hash_password("StateUP@2026"),
         "role": "state",
         "state": "Uttar Pradesh",
-        "name": "State Nodal Authority — UP",
+        "name": "State Nodal Authority - UP",
+        "designation": "Principal Secretary, Planning & Development",
     },
     "district_pilibhit": {
         "password_hash": hash_password("District@2026"),
         "role": "district",
         "state": "Uttar Pradesh",
         "ida": "PILIBHIT",
-        "name": "District Authority — Pilibhit",
+        "name": "District Authority - Pilibhit",
+        "designation": "District Magistrate & Collector",
     },
     "mp_javed": {
         "password_hash": hash_password("MP@2026"),
         "role": "mp",
         "mp_name": "Shri Javed Ali Khan",
+        "state": "Uttar Pradesh",
         "name": "Shri Javed Ali Khan (MP)",
+        "designation": "Member of Parliament (Rajya Sabha)",
     },
 }
 
-# ── Database Helper & WAL Mode ────────────────────────────────────────────────
+# -- Database Helper & WAL Mode ------------------------------------------------
 SUPABASE_DB_URL = os.getenv("DATABASE_URL")
 
 def get_supabase_conn():
@@ -164,6 +170,45 @@ def init_db():
     cols = [col[1] for col in c.fetchall()]
     if "role" not in cols:
         c.execute("ALTER TABLE dismissals ADD COLUMN role TEXT DEFAULT 'user'")
+
+    # Persistent Users Table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL,
+            name TEXT NOT NULL,
+            state TEXT,
+            ida TEXT,
+            mp_name TEXT,
+            designation TEXT,
+            created_at TEXT NOT NULL
+        )
+    ''')
+
+    # Seed demo users if not present
+    now_iso = datetime.utcnow().isoformat()
+    for username, uinfo in DEMO_USERS.items():
+        c.execute("SELECT id FROM users WHERE username = ?", (username,))
+        if not c.fetchone():
+            c.execute('''
+                INSERT INTO users (username, email, password_hash, role, name, state, ida, mp_name, designation, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                username,
+                f"{username}@mospi.gov.in" if uinfo["role"] == "ministry" else f"{username}@nic.in",
+                uinfo["password_hash"],
+                uinfo["role"],
+                uinfo["name"],
+                uinfo.get("state"),
+                uinfo.get("ida"),
+                uinfo.get("mp_name"),
+                uinfo.get("designation", "Authorized Official"),
+                now_iso
+            ))
+
     conn.commit()
     conn.close()
 
@@ -222,11 +267,13 @@ def get_cached_flags() -> pd.DataFrame:
     return _flags_cache
 
 # ── Authentication & Security Helpers ──────────────────────────────────────────
+_auth_options_cache: Optional[dict] = None
+
 def create_token(username: str, role: str, extra: dict = {}) -> str:
     payload = {
         "sub": username,
         "role": role,
-        "exp": datetime.utcnow() + timedelta(hours=12),
+        "exp": datetime.utcnow() + timedelta(hours=24),
         **extra
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -252,23 +299,44 @@ def decode_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def apply_role_scope(df: pd.DataFrame, user: Optional[dict]) -> pd.DataFrame:
-    """Enforce role-based access control (RBAC) safely without regex injection risks."""
-    if not user:
+    """Enforce role-based access control (RBAC) safely with case-insensitivity and no regex injection."""
+    if not user or not isinstance(user, dict):
         return df
     role = user.get("role")
     if role == "mp":
-        mp_name = user.get("mp_name", "")
-        return df[df["mp_name"] == mp_name]
+        mp_name = str(user.get("mp_name", "")).strip()
+        if mp_name and "mp_name" in df.columns:
+            return df[df["mp_name"].astype(str).str.strip().str.lower() == mp_name.lower()]
+        return df
     elif role == "district":
-        state = user.get("state", "")
-        ida = user.get("ida", "")
-        res = df[df["state"] == state]
+        state = str(user.get("state", "")).strip()
+        ida = str(user.get("ida", "")).strip()
+        res = df
+        if state and "state" in res.columns:
+            res = res[res["state"].astype(str).str.strip().str.lower() == state.lower()]
         if ida and "ida" in res.columns:
-            res = res[res["ida"].astype(str).str.contains(ida, case=False, na=False, regex=False)]
+            base_ida = re.sub(r'\(.*?\)', '', ida).strip()
+            base_clean = re.sub(r'[^a-zA-Z0-9]', '', base_ida).lower()
+            cond1 = res["ida"].astype(str).str.contains(base_ida, case=False, na=False, regex=False)
+            if cond1.any():
+                res = res[cond1]
+            else:
+                cond2 = res["ida"].astype(str).apply(lambda x: base_clean in re.sub(r'[^a-zA-Z0-9]', '', str(x)).lower())
+                if cond2.any():
+                    res = res[cond2]
+                else:
+                    tokens = [t for t in base_ida.split() if len(t) > 3]
+                    for tok in tokens:
+                        c = res["ida"].astype(str).str.contains(tok, case=False, na=False, regex=False)
+                        if c.any():
+                            res = res[c]
+                            break
         return res
     elif role == "state":
-        state = user.get("state", "")
-        return df[df["state"] == state]
+        state = str(user.get("state", "")).strip()
+        if state and "state" in df.columns:
+            return df[df["state"].astype(str).str.strip().str.lower() == state.lower()]
+        return df
     return df  # ministry role sees all
 
 # ── Auth Endpoints ─────────────────────────────────────────────────────────────
@@ -276,11 +344,170 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    role: str  # "ministry", "state", "district", "mp"
+    name: str
+    email: str
+    designation: Optional[str] = None
+    state: Optional[str] = None
+    ida: Optional[str] = None
+    mp_name: Optional[str] = None
+    clearance_code: Optional[str] = None
+
+@app.post("/api/register", tags=["Auth"])
+@app.post("/api/signup", tags=["Auth"])
+def register(req: RegisterRequest):
+    req_role = req.role.strip().lower()
+    valid_roles = ("ministry", "state", "district", "mp")
+    if req_role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+    
+    clean_username = req.username.strip().lower()
+    if len(clean_username) < 3:
+        raise HTTPException(status_code=400, detail="Username must be at least 3 characters long")
+    
+    clean_email = req.email.strip().lower() if req.email else ""
+    if not clean_email or not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", clean_email):
+        raise HTTPException(status_code=400, detail="A valid official email address is mandatory for registration")
+
+    # Password policy: >= 8 characters, at least 1 letter, 1 number, 1 special character
+    if len(req.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+    if not re.search(r"[A-Za-z]", req.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one letter")
+    if not re.search(r"\d", req.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number")
+    if not re.search(r"[^A-Za-z0-9]", req.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one special character")
+        
+    state = req.state.strip() if req.state else None
+    ida = req.ida.strip() if req.ida else None
+    mp_name = req.mp_name.strip() if req.mp_name else None
+    designation = req.designation.strip() if req.designation else None
+
+    if req_role == "state" and not state:
+        raise HTTPException(status_code=400, detail="State Nodal Authorities must designate a State/UT jurisdiction")
+    if req_role == "district" and not (state and ida):
+        raise HTTPException(status_code=400, detail="District Authorities must designate both State and District (IDA)")
+    if req_role == "mp" and not mp_name:
+        raise HTTPException(status_code=400, detail="Member of Parliament must designate their Member/Constituency name")
+
+    if not designation:
+        role_default_titles = {
+            "ministry": "MoSPI Vigilance Officer",
+            "state": f"State Nodal Officer ({state})",
+            "district": f"District Authority Officer ({ida})",
+            "mp": "Member of Parliament",
+        }
+        designation = role_default_titles.get(req_role, "Authorized Official")
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT id FROM users WHERE username = ? OR (email IS NOT NULL AND email = ?)", (clean_username, clean_email))
+    if c.fetchone():
+        conn.close()
+        raise HTTPException(status_code=400, detail="Username or Email already registered. Please login instead.")
+
+    pwd_hash = hash_password(req.password)
+    now_iso = datetime.utcnow().isoformat()
+    clean_name = req.name.strip()
+
+    c.execute('''
+        INSERT INTO users (username, email, password_hash, role, name, state, ida, mp_name, designation, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        clean_username,
+        clean_email,
+        pwd_hash,
+        req_role,
+        clean_name,
+        state,
+        ida,
+        mp_name,
+        designation,
+        now_iso
+    ))
+    conn.commit()
+    conn.close()
+
+    extra = {
+        "name": clean_name,
+        "email": clean_email,
+        "state": state or "",
+        "ida": ida or "",
+        "mp_name": mp_name or "",
+        "designation": designation,
+    }
+    token = create_token(clean_username, req_role, extra)
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "username": clean_username,
+        "role": req_role,
+        "name": clean_name,
+        **extra
+    }
+
 @app.post("/api/login", tags=["Auth"])
 def login(req: LoginRequest):
-    user = DEMO_USERS.get(req.username)
+    input_user = req.username.strip().lower()
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        SELECT username, email, password_hash, role, name, state, ida, mp_name, designation
+        FROM users
+        WHERE LOWER(username) = ? 
+           OR (email IS NOT NULL AND LOWER(email) = ?)
+           OR (mp_name IS NOT NULL AND LOWER(mp_name) = ?)
+           OR (name IS NOT NULL AND LOWER(name) = ?)
+    ''', (input_user, input_user, input_user, input_user))
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        user_dict = dict(row)
+        if hash_password(req.password) != user_dict["password_hash"]:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        extra = {
+            "name": user_dict["name"],
+            "email": user_dict.get("email") or "",
+            "state": user_dict.get("state") or "",
+            "ida": user_dict.get("ida") or "",
+            "mp_name": user_dict.get("mp_name") or "",
+            "designation": user_dict.get("designation") or "",
+        }
+        token = create_token(user_dict["username"], user_dict["role"], extra)
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "username": user_dict["username"],
+            "role": user_dict["role"],
+            "name": user_dict["name"],
+            **extra
+        }
+
+    # Fallback to in-memory DEMO_USERS
+    user = DEMO_USERS.get(input_user) or DEMO_USERS.get(req.username.strip())
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+        # Check if input matches any registered or official MP from dataset
+        try:
+            df_alloc_check = pd.read_csv(os.path.join(ROOT_DIR, "data", "processed", "clean_allocated.csv"), low_memory=False)
+            alloc_mps = df_alloc_check["mp_name"].dropna().astype(str).tolist()
+            matched_mp = next((m for m in alloc_mps if m.lower() == input_user or input_user in m.lower()), None)
+            if matched_mp:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Official profile for '{matched_mp}' is recognized from parliamentary records, but has not been activated with a password yet. Please click 'Register New Official' to set up your account."
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+        raise HTTPException(status_code=401, detail="Invalid username or password. Please verify your credentials or register.")
     
     if hash_password(req.password) != user["password_hash"]:
         raise HTTPException(status_code=401, detail="Invalid username or password")
@@ -290,6 +517,7 @@ def login(req: LoginRequest):
     return {
         "access_token": token,
         "token_type": "bearer",
+        "username": req.username,
         "role": user["role"],
         "name": user["name"],
         **extra
@@ -298,6 +526,263 @@ def login(req: LoginRequest):
 @app.get("/api/me", tags=["Auth"])
 def get_current_user_profile(user: dict = Depends(decode_token)):
     return user
+
+INDIA_OFFICIAL_DISTRICTS = {
+    'Andhra Pradesh': [
+        'Alluri Sitharama Raju', 'Anakapalli', 'Ananthapuramu', 'Annamayya', 'Bapatla',
+        'Chittoor', 'Dr. B.R. Ambedkar Konaseema', 'East Godavari', 'Eluru', 'Guntur',
+        'Kakinada', 'Krishna', 'Kurnool', 'Nandyal', 'NTR', 'Palnadu', 'Parvathipuram Manyam',
+        'Prakasam', 'Srikakulam', 'Sri Potti Sriramulu Nellore', 'Sri Sathya Sai',
+        'Tirupati', 'Visakhapatnam', 'Vizianagaram', 'West Godavari', 'YSR Kadapa'
+    ],
+    'Arunachal Pradesh': [
+        'Anjaw', 'Changlang', 'Dibang Valley', 'East Kameng', 'East Siang', 'Itanagar Capital Complex',
+        'Kamle', 'Keyi Panyor', 'Kra Daadi', 'Kurung Kumey', 'Lepa Rada', 'Lohit', 'Longding',
+        'Lower Dibang Valley', 'Lower Siang', 'Lower Subansiri', 'Namsai', 'Pakke Kessang',
+        'Papum Pare', 'Shi Yomi', 'Siang', 'Tawang', 'Tirap', 'Upper Siang', 'Upper Subansiri',
+        'West Kameng', 'West Siang'
+    ],
+    'Assam': [
+        'Baksa', 'Barpeta', 'Biswanath', 'Bongaigaon', 'Cachar', 'Charaideo', 'Chirang',
+        'Darrang', 'Dhemaji', 'Dhubri', 'Dibrugarh', 'Dima Hasao', 'Goalpara', 'Golaghat',
+        'Hailakandi', 'Hojai', 'Jorhat', 'Kamrup', 'Kamrup Metropolitan', 'Karbi Anglong',
+        'Karimganj', 'Kokrajhar', 'Lakhimpur', 'Majuli', 'Morigaon', 'Nagaon', 'Nalbari',
+        'Sivasagar', 'Sonitpur', 'South Salmara-Mankachar', 'Tamulpur', 'Tinsukia', 'Udalguri',
+        'West Karbi Anglong'
+    ],
+    'Bihar': [
+        'Araria', 'Arwal', 'Aurangabad', 'Banka', 'Begusarai', 'Bhagalpur', 'Bhojpur', 'Buxar',
+        'Darbhanga', 'East Champaran (Motihari)', 'Gaya', 'Gopalganj', 'Jamui', 'Jehanabad',
+        'Kaimur (Bhabua)', 'Katihar', 'Khagaria', 'Kishanganj', 'Lakhisarai', 'Madhepura',
+        'Madhubani', 'Munger', 'Muzaffarpur', 'Nalanda', 'Nawada', 'Patna', 'Purnia',
+        'Rohtas', 'Saharsa', 'Samastipur', 'Saran (Chhapra)', 'Sheikhpura', 'Sheohar',
+        'Sitamarhi', 'Siwan', 'Supaul', 'Vaishali', 'West Champaran (Bettiah)'
+    ],
+    'Chhattisgarh': [
+        'Balod', 'Baloda Bazar-Bhatapara', 'Balrampur-Ramanujganj', 'Bastar', 'Bemetara',
+        'Bijapur', 'Bilaspur', 'Dantewada (South Bastar)', 'Dhamtari', 'Durg', 'Gariaband',
+        'Gaurela-Pendra-Marwahi', 'Janjgir-Champa', 'Jashpur', 'Kabirdham (Kawardha)',
+        'Kanker (North Bastar)', 'Khairagarh-Chhuikhadan-Gandai', 'Kondagaon', 'Korba', 'Koriya',
+        'Mahasamund', 'Manendragarh-Chirmiri-Bharatpur', 'Mohla-Manpur-Ambagarh Chowki',
+        'Mungeli', 'Narayanpur', 'Raigarh', 'Raipur', 'Rajnandgaon', 'Sakti', 'Sarangarh-Bilaigarh',
+        'Sukma', 'Surajpur', 'Surguja'
+    ],
+    'Goa': ['North Goa', 'South Goa'],
+    'Gujarat': [
+        'Ahmedabad', 'Amreli', 'Anand', 'Aravalli', 'Banaskantha', 'Bharuch', 'Bhavnagar',
+        'Botad', 'Chhota Udaipur', 'Dahod', 'Dang', 'Devbhumi Dwarka', 'Gandhinagar',
+        'Gir Somnath', 'Jamnagar', 'Junagadh', 'Kheda', 'Kutch', 'Mahisagar', 'Mehsana',
+        'Morbi', 'Narmada', 'Navsari', 'Panchmahal', 'Patan', 'Porbandar', 'Rajkot',
+        'Sabarkantha', 'Surat', 'Surendranagar', 'Tapi', 'Vadodara', 'Valsad'
+    ],
+    'Haryana': [
+        'Ambala', 'Bhiwani', 'Charkhi Dadri', 'Faridabad', 'Fatehabad', 'Gurugram', 'Hisar',
+        'Jhajjar', 'Jind', 'Kaithal', 'Karnal', 'Kurukshetra', 'Mahendragarh', 'Nuh',
+        'Palwal', 'Panchkula', 'Panipat', 'Rewari', 'Rohtak', 'Sirsa', 'Sonipat', 'Yamunanagar'
+    ],
+    'Himachal Pradesh': [
+        'Bilaspur', 'Chamba', 'Hamirpur', 'Kangra', 'Kinnaur', 'Kullu', 'Lahaul and Spiti',
+        'Mandi', 'Shimla', 'Sirmaur', 'Solan', 'Una'
+    ],
+    'Jharkhand': [
+        'Bokaro', 'Chatra', 'Deoghar', 'Dhanbad', 'Dumka', 'East Singhbhum', 'Garhwa',
+        'Giridih', 'Godda', 'Gumla', 'Hazaribagh', 'Jamtara', 'Khunti', 'Koderma',
+        'Latehar', 'Lohardaga', 'Pakur', 'Palamu', 'Ramgarh', 'Ranchi', 'Sahibganj',
+        'Seraikela Kharsawan', 'Simdega', 'West Singhbhum'
+    ],
+    'Karnataka': [
+        'Bagalkote', 'Ballari', 'Belagavi', 'Bengaluru Rural', 'Bengaluru Urban', 'Bidar',
+        'Chamarajanagar', 'Chikkaballapura', 'Chikkamagaluru', 'Chitradurga', 'Dakshina Kannada',
+        'Davanagere', 'Dharwad', 'Gadag', 'Hassan', 'Haveri', 'Kalaburagi', 'Kodagu',
+        'Kolar', 'Koppal', 'Mandya', 'Mysuru', 'Raichur', 'Ramanagara', 'Shivamogga',
+        'Tumakuru', 'Udupi', 'Uttara Kannada', 'Vijayanagara', 'Vijayapura', 'Yadgir'
+    ],
+    'Kerala': [
+        'Alappuzha', 'Ernakulam', 'Idukki', 'Kannur', 'Kasaragod', 'Kollam', 'Kottayam',
+        'Kozhikode', 'Malappuram', 'Palakkad', 'Pathanamthitta', 'Thiruvananthapuram',
+        'Thrissur', 'Wayanad'
+    ],
+    'Madhya Pradesh': [
+        'Agar Malwa', 'Alirajpur', 'Anuppur', 'Ashoknagar', 'Balaghat', 'Barwani', 'Betul',
+        'Bhind', 'Bhopal', 'Burhanpur', 'Chhatarpur', 'Chhindwara', 'Damoh', 'Datia',
+        'Dewas', 'Dhar', 'Dindori', 'Guna', 'Gwalior', 'Harda', 'Hoshangabad (Narmadapuram)',
+        'Indore', 'Jabalpur', 'Jhabua', 'Katni', 'Khandwa', 'Khargone', 'Maihar', 'Mandla',
+        'Mandsaur', 'Mauganj', 'Morena', 'Narsinghpur', 'Neemuch', 'Niwari', 'Pandhurna',
+        'Panna', 'Raisen', 'Rajgarh', 'Ratlam', 'Rewa', 'Sagar', 'Satna', 'Sehore', 'Seoni',
+        'Shahdol', 'Shajapur', 'Sheopur', 'Shivpuri', 'Sidhi', 'Singrauli', 'Tikamgarh',
+        'Ujjain', 'Umaria', 'Vidisha'
+    ],
+    'Maharashtra': [
+        'Ahmednagar (Ahilyanagar)', 'Akola', 'Amravati', 'Beed', 'Bhandara', 'Buldhana',
+        'Chandrapur', 'Chhatrapati Sambhajinagar (Aurangabad)', 'Dhule', 'Gadchiroli',
+        'Gondia', 'Hingoli', 'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City',
+        'Mumbai Suburban', 'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Dharashiv (Osmanabad)',
+        'Palghar', 'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara',
+        'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
+    ],
+    'Manipur': [
+        'Bishnupur', 'Chandel', 'Churachandpur', 'Imphal East', 'Imphal West', 'Jiribam',
+        'Kakching', 'Kamjong', 'Kangpokpi', 'Noney', 'Pherzawl', 'Senapati', 'Tamenglong',
+        'Tengnoupal', 'Thoubal', 'Ukhrul'
+    ],
+    'Meghalaya': [
+        'Eastern West Khasi Hills', 'East Garo Hills', 'East Jaintia Hills', 'East Khasi Hills',
+        'North Garo Hills', 'Ri Bhoi', 'South Garo Hills', 'South West Garo Hills',
+        'South West Khasi Hills', 'West Garo Hills', 'West Jaintia Hills', 'West Khasi Hills'
+    ],
+    'Mizoram': [
+        'Aizawl', 'Champhai', 'Hnahthial', 'Khawzawl', 'Kolasib', 'Lawngtlai', 'Lunglei',
+        'Mamit', 'Saitual', 'Serchhip', 'Siaha'
+    ],
+    'Nagaland': [
+        'Chumoukedima', 'Dimapur', 'Kiphire', 'Kohima', 'Longleng', 'Mokokchung', 'Mon',
+        'Niuland', 'Noklak', 'Peren', 'Phek', 'Shamator', 'Tseminyu', 'Tuensang', 'Wokha',
+        'Zunheboto'
+    ],
+    'Odisha': [
+        'Angul', 'Balangir', 'Balasore (Baleswar)', 'Bargarh', 'Bhadrak', 'Boudh', 'Cuttack',
+        'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur', 'Jajpur', 'Jharsuguda',
+        'Kalahandi', 'Kandhamal', 'Kendrapara', 'Kendujhar (Keonjhar)', 'Khordha', 'Koraput',
+        'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh', 'Nuapada', 'Puri', 'Rayagada',
+        'Sambalpur', 'Subarnapur (Sonepur)', 'Sundargarh'
+    ],
+    'Punjab': [
+        'Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib', 'Fazilka',
+        'Ferozepur', 'Gurdaspur', 'Hoshiarpur', 'Jalandhar', 'Kapurthala', 'Ludhiana',
+        'Malerkotla', 'Mansa', 'Moga', 'Muktsar', 'Pathankot', 'Patiala', 'Rupnagar',
+        'Sahibzada Ajit Singh Nagar (Mohali)', 'Sangrur', 'Shaheed Bhagat Singh Nagar (Nawanshahr)',
+        'Tarn Taran'
+    ],
+    'Rajasthan': [
+        'Ajmer', 'Alwar', 'Anupgarh', 'Balotra', 'Banswara', 'Baran', 'Barmer', 'Beawar',
+        'Bharatpur', 'Bhilwara', 'Bikaner', 'Bundi', 'Chittorgarh', 'Churu', 'Dausa',
+        'Deeg', 'Dholpur', 'Didwana-Kuchaman', 'Dudu', 'Dungarpur', 'Ganganagar',
+        'Gangapur City', 'Hanumangarh', 'Jaipur', 'Jaipur Rural', 'Jaisalmer', 'Jalore',
+        'Jhalawar', 'Jhunjhunu', 'Jodhpur', 'Jodhpur Rural', 'Karauli', 'Kekri',
+        'Khairthal-Tijara', 'Kota', 'Kotputli-Behror', 'Nagaur', 'Neem Ka Thana', 'Pali',
+        'Phalodi', 'Pratapgarh', 'Rajsamand', 'Salumbar', 'Sanchore', 'Sawai Madhopur',
+        'Shahpura', 'Sikar', 'Sirohi', 'Tonk', 'Udaipur'
+    ],
+    'Sikkim': ['Gangtok', 'Gyalshing', 'Mangan', 'Namchi', 'Pakyong', 'Soreng'],
+    'Tamil Nadu': [
+        'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri',
+        'Dindigul', 'Erode', 'Kallakurichi', 'Kanchipuram', 'Kanyakumari', 'Karur',
+        'Krishnagiri', 'Madurai', 'Mayiladuthurai', 'Nagapattinam', 'Namakkal', 'Nilgiris',
+        'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 'Salem', 'Sivaganga',
+        'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli',
+        'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore',
+        'Viluppuram', 'Virudhunagar'
+    ],
+    'Telangana': [
+        'Adilabad', 'Bhadradri Kothagudem', 'Hanumakonda', 'Hyderabad', 'Jagtial', 'Jangaon',
+        'Jayashankar Bhupalpally', 'Jogulamba Gadwal', 'Kamareddy', 'Karimnagar', 'Khammam',
+        'Kumuram Bheem Asifabad', 'Mahabubabad', 'Mahabubnagar', 'Mancherial', 'Medak',
+        'Medchal-Malkajgiri', 'Mulugu', 'Nagarkurnool', 'Nalgonda', 'Narayanpet', 'Nirmal',
+        'Nizamabad', 'Peddapalli', 'Rajanna Sircilla', 'Rangareddy', 'Sangareddy', 'Siddipet',
+        'Suryapet', 'Vikarabad', 'Wanaparthy', 'Warangal', 'Yadadri Bhuvanagiri'
+    ],
+    'Tripura': [
+        'Dhalai', 'Gomati', 'Khowai', 'North Tripura', 'Sepahijala', 'South Tripura',
+        'Unakoti', 'West Tripura'
+    ],
+    'Uttar Pradesh': [
+        'Agra', 'Aligarh', 'Ambedkar Nagar', 'Amethi', 'Amroha', 'Auraiya', 'Ayodhya',
+        'Azamgarh', 'Baghpat', 'Bahraich', 'Ballia', 'Balrampur', 'Banda', 'Barabanki',
+        'Bareilly', 'Basti', 'Bhadohi', 'Bijnor', 'Budaun', 'Bulandshahr', 'Chandauli',
+        'Chitrakoot', 'Deoria', 'Etah', 'Etawah', 'Farrukhabad', 'Fatehpur', 'Firozabad',
+        'Gautam Buddha Nagar (Noida)', 'Ghaziabad', 'Ghazipur', 'Gonda', 'Gorakhpur',
+        'Hamirpur', 'Hapur', 'Hardoi', 'Hathras', 'Jalaun (Orai)', 'Jaunpur', 'Jhansi',
+        'Kannauj', 'Kanpur Dehat', 'Kanpur Nagar', 'Kasganj', 'Kaushambi', 'Kheri (Lakhimpur)',
+        'Kushinagar', 'Lalitpur', 'Lucknow', 'Maharajganj', 'Mahoba', 'Mainpuri', 'Mathura',
+        'Mau', 'Meerut', 'Mirzapur', 'Moradabad', 'Muzaffarnagar', 'Pilibhit', 'Pratapgarh',
+        'Prayagraj (Allahabad)', 'Raebareli', 'Rampur', 'Saharanpur', 'Sambhal',
+        'Sant Kabir Nagar', 'Shahjahanpur', 'Shamli', 'Shravasti', 'Siddharthnagar',
+        'Sitapur', 'Sonbhadra', 'Sultanpur', 'Unnao', 'Varanasi'
+    ],
+    'Uttarakhand': [
+        'Almora', 'Bageshwar', 'Chamoli', 'Champawat', 'Dehradun', 'Haridwar', 'Nainital',
+        'Pauri Garhwal', 'Pithoragarh', 'Rudraprayag', 'Tehri Garhwal', 'Udham Singh Nagar',
+        'Uttarkashi'
+    ],
+    'West Bengal': [
+        'Alipurduar', 'Bankura', 'Birbhum', 'Cooch Behar', 'Dakshin Dinajpur', 'Darjeeling',
+        'Hooghly', 'Howrah', 'Jalpaiguri', 'Jhargram', 'Kalimpong', 'Kolkata', 'Malda',
+        'Murshidabad', 'Nadia', 'North 24 Parganas', 'Paschim Bardhaman', 'Paschim Medinipur',
+        'Purba Bardhaman', 'Purba Medinipur', 'Purulia', 'South 24 Parganas', 'Uttar Dinajpur'
+    ],
+    'Andaman And Nicobar Islands': ['Nicobars', 'North And Middle Andaman', 'South Andamans'],
+    'Chandigarh': ['Chandigarh'],
+    'The Dadra And Nagar Haveli And Daman And Diu': ['Dadra And Nagar Haveli', 'Daman', 'Diu'],
+    'Delhi': [
+        'Central Delhi', 'East Delhi', 'New Delhi', 'North Delhi', 'North East Delhi',
+        'North West Delhi', 'Shahdara', 'South Delhi', 'South East Delhi', 'South West Delhi',
+        'West Delhi'
+    ],
+    'Jammu And Kashmir': [
+        'Anantnag', 'Bandipora', 'Baramulla', 'Budgam', 'Doda', 'Ganderbal', 'Jammu',
+        'Kathua', 'Kishtwar', 'Kulgam', 'Kupwara', 'Poonch', 'Pulwama', 'Rajouri',
+        'Ramban', 'Reasi', 'Samba', 'Shopian', 'Srinagar', 'Udhampur'
+    ],
+    'Ladakh': ['Kargil', 'Leh Ladakh'],
+    'Lakshadweep': ['Lakshadweep'],
+    'Puducherry': ['Karaikal', 'Mahe', 'Puducherry', 'Yanam']
+}
+
+@app.get("/api/auth/options", tags=["Auth"])
+def get_auth_options():
+    """Returns dynamic lists for all 36 States, all 100% official Districts, and all 774+ MPs across datasets."""
+    global _auth_options_cache
+    if _auth_options_cache is not None:
+        return _auth_options_cache
+
+    try:
+        # 1. Consolidated States (all 36 States and Union Territories)
+        states = sorted(list(INDIA_OFFICIAL_DISTRICTS.keys()))
+
+        # 2. Canonical Official Implementing Districts grouped by state
+        districts_by_state = {st: sorted(dists) for st, dists in INDIA_OFFICIAL_DISTRICTS.items()}
+
+        # 3. Comprehensive Master MP Registry from clean_allocated (774 MPs with constituency, house, and state)
+        alloc_file = os.path.join(ROOT_DIR, "data", "processed", "clean_allocated.csv")
+        mps_map = {}
+        if os.path.exists(alloc_file):
+            df_alloc = pd.read_csv(alloc_file)
+            for r in df_alloc.to_dict('records'):
+                m_name = str(r.get("mp_name", "")).strip()
+                if m_name and m_name.lower() != "nan":
+                    st = str(r.get("state", "")).strip()
+                    hs = str(r.get("house", "")).strip() or "LS"
+                    ct = str(r.get("constituency", "")).strip() if pd.notna(r.get("constituency")) else ""
+                    mps_map[m_name] = {"name": m_name, "state": st, "house": hs, "constituency": ct}
+
+        mps = sorted(list(mps_map.values()), key=lambda x: x["name"])
+
+        _auth_options_cache = {
+            "states": states,
+            "districts_by_state": districts_by_state,
+            "mps": mps
+        }
+        return _auth_options_cache
+    except Exception as e:
+        return {
+            "states": ["Uttar Pradesh", "Maharashtra", "West Bengal", "Bihar", "Tamil Nadu"],
+            "districts_by_state": {"Uttar Pradesh": ["Pilibhit", "Varanasi", "Lucknow", "Agra"]},
+            "mps": [{"name": "Shri Javed Ali Khan", "state": "Uttar Pradesh", "house": "RS", "constituency": "Sambhal"}]
+        }
+
+@app.get("/api/auth/users", tags=["Auth"])
+def get_registered_users():
+    """Returns directory of registered accounts for easy role switching (excluding password hashes)."""
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        SELECT username, email, role, name, state, ida, mp_name, designation, created_at
+        FROM users
+        ORDER BY id ASC
+    ''')
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return {"users": rows}
 
 # ── Non-Blocking Background Pipeline Execution ─────────────────────────────────
 pipeline_state = {
@@ -411,10 +896,12 @@ def get_executive_kpis(user: Optional[dict] = Depends(get_current_user_optional)
     total_works = len(df)
     if total_works == 0:
         return {
-            "total_works": 0, "total_sanctioned_amount": 0.0, "total_spent_amount": 0.0,
+            "total_works": 0, "total_sanctioned_amount": 0.0, "total_sanctioned_cr": 0.0,
+            "total_spent_amount": 0.0, "total_spent_cr": 0.0,
             "critical_count": 0, "high_count": 0, "medium_count": 0, "low_count": 0,
-            "funds_at_critical_risk": 0.0, "funds_at_high_risk": 0.0, "total_funds_at_risk": 0.0,
-            "monopoly_vendor_works": 0, "missing_photo_works": 0, "average_risk_score": 0.0
+            "funds_at_critical_risk": 0.0, "funds_at_high_risk": 0.0, "total_funds_at_risk": 0.0, "total_at_risk_cr": 0.0,
+            "monopoly_vendor_works": 0, "missing_photo_works": 0, "missing_photos_count": 0,
+            "duplicate_photos_count": 0, "average_risk_score": 0.0
         }
         
     crit_mask = df["risk_label"] == "CRITICAL"
@@ -428,7 +915,9 @@ def get_executive_kpis(user: Optional[dict] = Depends(get_current_user_optional)
     return {
         "total_works": total_works,
         "total_sanctioned_amount": round(float(df["sanction_amount"].sum()), 2),
+        "total_sanctioned_cr": round(float(df["sanction_amount"].sum()) / 1e7, 2),
         "total_spent_amount": round(float(df["total_spent"].sum()), 2),
+        "total_spent_cr": round(float(df["total_spent"].sum()) / 1e7, 2),
         "critical_count": int(crit_mask.sum()),
         "high_count": int(high_mask.sum()),
         "medium_count": int(med_mask.sum()),
@@ -436,11 +925,15 @@ def get_executive_kpis(user: Optional[dict] = Depends(get_current_user_optional)
         "funds_at_critical_risk": round(crit_amt, 2),
         "funds_at_high_risk": round(high_amt, 2),
         "total_funds_at_risk": round(crit_amt + high_amt, 2),
+        "total_at_risk_cr": round((crit_amt + high_amt) / 1e7, 2),
         "monopoly_vendor_works": int(df["work_vendor_flag"].sum()) if "work_vendor_flag" in df.columns else 0,
         "missing_photo_works": int(df["rule_missing_photo"].sum()) if "rule_missing_photo" in df.columns else 0,
+        "missing_photos_count": int(df["rule_missing_photo"].sum()) if "rule_missing_photo" in df.columns else 0,
+        "duplicate_photos_count": int(df["is_duplicate"].sum()) if "is_duplicate" in df.columns else 0,
         "premature_tranche_works": int(df["rule_premature_tranche"].sum()) if "rule_premature_tranche" in df.columns else 0,
         "stalled_execution_works": int(df["rule_stalled_execution"].sum()) if "rule_stalled_execution" in df.columns else 0,
         "split_tender_works": int(df["rule_split_tender"].sum()) if "rule_split_tender" in df.columns else 0,
+        "overspend_count": int(df["rule_overspend"].sum()) if "rule_overspend" in df.columns else 0,
         "average_risk_score": round(float(df["risk_score"].mean()), 2)
     }
 

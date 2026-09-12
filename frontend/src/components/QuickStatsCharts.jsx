@@ -16,12 +16,11 @@ import {
 export default function QuickStatsCharts({ kpis }) {
   if (!kpis) return null;
 
-  const {
-    critical_count = 1042,
-    high_count = 7624,
-    medium_count = 24150,
-    low_count = 65833,
-  } = kpis;
+  const critical_count = kpis.critical_count ?? 15731;
+  const high_count = kpis.high_count ?? 6053;
+  const medium_count = kpis.medium_count ?? 14867;
+  const low_count = kpis.low_count ?? 61998;
+  const total_works = kpis.total_works || (critical_count + high_count + medium_count + low_count) || 98649;
 
   const pieData = [
     { name: 'Critical Risk', value: critical_count, color: '#f43f5e' },
@@ -31,13 +30,16 @@ export default function QuickStatsCharts({ kpis }) {
   ];
 
   const stateRiskData = [
-    { state: 'Uttar Pradesh', critical: 248, high: 1420, atRiskCr: 215.4 },
-    { state: 'Maharashtra', critical: 185, high: 980, atRiskCr: 168.2 },
-    { state: 'Bihar', critical: 142, high: 840, atRiskCr: 132.8 },
-    { state: 'Rajasthan', critical: 98, high: 620, atRiskCr: 104.5 },
-    { state: 'West Bengal', critical: 92, high: 590, atRiskCr: 98.1 },
-    { state: 'Tamil Nadu', critical: 76, high: 510, atRiskCr: 84.3 },
-    { state: 'Madhya Pradesh', critical: 71, high: 490, atRiskCr: 79.6 },
+    { state: 'Uttar Pradesh', critical: 2883, high: 2229, atRiskCr: 466.0 },
+    { state: 'Punjab', critical: 1902, high: 97, atRiskCr: 90.8 },
+    { state: 'Bihar', critical: 1632, high: 204, atRiskCr: 165.3 },
+    { state: 'Telangana', critical: 1242, high: 31, atRiskCr: 43.4 },
+    { state: 'Tamil Nadu', critical: 1133, high: 83, atRiskCr: 115.3 },
+    { state: 'Odisha', critical: 1116, high: 25, atRiskCr: 35.7 },
+    { state: 'Rajasthan', critical: 704, high: 118, atRiskCr: 55.0 },
+    { state: 'Madhya Pradesh', critical: 686, high: 647, atRiskCr: 87.1 },
+    { state: 'Gujarat', critical: 646, high: 325, atRiskCr: 37.4 },
+    { state: 'Jharkhand', critical: 540, high: 558, atRiskCr: 59.1 },
   ];
 
   const CustomPieTooltip = ({ active, payload }) => {
@@ -53,7 +55,7 @@ export default function QuickStatsCharts({ kpis }) {
             {Number(data.value).toLocaleString('en-IN')} Schemes
           </div>
           <div className="text-[10px] text-slate-400 mt-1">
-            {((data.value / 98649) * 100).toFixed(1)}% of audited works
+            {((data.value / total_works) * 100).toFixed(1)}% of audited works
           </div>
         </div>
       );

@@ -1,5 +1,5 @@
 # 🇮🇳 BHARAT-DRISHTI // COMPLETE STEP-BY-STEP IMPLEMENTATION PLAN
-### **SIH 2026 — Problem Statement 26102** | MoSPI Data Informatics & Innovation Division (DIID)
+### **SIH 2026 — National MPLADS AI Vigilance System** | MoSPI Data Informatics & Innovation Division (DIID)
 **System Name:** *Bharat-Drishti (National MPLADS AI Vigilance & Audit System)*  
 **Goal:** Build, integrate, and verify an end-to-end, multi-modal, fraud-detection and vigilance governance platform.
 

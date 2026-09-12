@@ -1,5 +1,5 @@
 # 🇮🇳 BHARAT-DRISHTI // SIH 2026 DEFINITIVE MASTER BLUEPRINT
-### **Problem Statement ID: 26102** | MoSPI — Data Informatics & Innovation Division (DIID)
+### **National MPLADS AI Vigilance System** | MoSPI — Data Informatics & Innovation Division (DIID)
 **Title:** *Development of an AI-powered system to detect anomalies, fraud, and inefficiencies in MPLAD Scheme implementation regd.*  
 **Theme:** Smart Automation | **Category:** Software  
 **Dataset Reference:** [mplads.mospi.gov.in](https://mplads.mospi.gov.in/digigov/dashboard.html)
@@ -48,7 +48,7 @@ A strict judge checks domain depth in the first 60 seconds: do you understand ho
 
 ## 🎯 PART 2: What the Problem Statement is Actually Asking
 
-| Official Ask (Verbatim from PS 26102) | Real-World Administrative Meaning | Technical AI/ML Implementation |
+| Official Statutory Ask | Real-World Administrative Meaning | Technical AI/ML Implementation |
 |:---|:---|:---|
 | *"Trends and anomalies in expenditure patterns"* | Irregular sanction-to-disbursement cadence; fiscal year-end fund dumps (spending 80% in March). | Time-series decomposition, Budget Drain Velocity, robust residual deviation modeling. |
 | *"Cost overruns"* | Project cost exceeding original sanctioned engineering estimate without revised approval. | Estimation-vs-actual regression residuals benchmarked against regional civil medians. |

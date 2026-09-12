@@ -114,7 +114,7 @@ export default function ModelValidationView({ onSelectWork }) {
         <div>
           <div className="flex items-center space-x-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase">
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span>SIH Grand Jury Defense Suite // Problem Statement 26102</span>
+            <span>Grand Jury Defense Suite // National MPLADS Vigilance</span>
           </div>
           <h2 className="text-xl font-bold text-white font-display mt-1">
             Model Validation & Triangulated Ground-Truth Architecture

@@ -3,7 +3,7 @@
  * Direct connection to FastAPI backend (http://127.0.0.1:8000)
  */
 
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
+export const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 let authToken = localStorage.getItem('bharat_drishti_token') || '';
 let currentUser = JSON.parse(localStorage.getItem('bharat_drishti_user') || 'null');
@@ -60,10 +60,10 @@ export const api = {
   async getDemoAccounts() {
     return {
       demo_accounts: [
-        { username: 'ministry_admin', name: 'MoSPI Ministry Official', role: 'ministry' },
-        { username: 'state_nodal_up', name: 'State Nodal Authority — UP', role: 'state' },
-        { username: 'district_pilibhit', name: 'District Authority — Pilibhit', role: 'district' },
-        { username: 'mp_javed', name: 'Shri Javed Ali Khan (MP)', role: 'mp' }
+        { username: 'ministry_admin', name: 'MoSPI Ministry Official', role: 'ministry', designation: 'Central Vigilance & National Oversight' },
+        { username: 'state_nodal_up', name: 'State Nodal Authority - UP', role: 'state', state: 'Uttar Pradesh', designation: 'Principal Secretary (Planning)' },
+        { username: 'district_pilibhit', name: 'District Authority - Pilibhit', role: 'district', state: 'Uttar Pradesh', ida: 'PILIBHIT', designation: 'District Magistrate & Collector' },
+        { username: 'mp_javed', name: 'Shri Javed Ali Khan (MP)', role: 'mp', mp_name: 'Shri Javed Ali Khan', state: 'Uttar Pradesh', designation: 'Member of Parliament (Rajya Sabha)' }
       ]
     };
   },
@@ -77,6 +77,35 @@ export const api = {
     }
   },
 
+  async getAuthOptions() {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/options`);
+      return await handleResponse(res);
+    } catch (err) {
+      console.error('Failed to load auth options from backend:', err);
+      return {
+        states: ['Uttar Pradesh', 'Maharashtra', 'West Bengal', 'Bihar', 'Tamil Nadu', 'Rajasthan', 'Madhya Pradesh', 'Karnataka', 'Gujarat', 'Delhi'],
+        districts_by_state: {
+          'Uttar Pradesh': ['PILIBHIT', 'VARANASI', 'LUCKNOW', 'AGRA', 'KANPUR NAGAR', 'GORAKHPUR', 'PRAYAGRAJ'],
+        },
+        mps: [
+          { name: 'Shri Javed Ali Khan', state: 'Uttar Pradesh', house: 'RS' },
+          { name: 'Sk Nurul Islam', state: 'West Bengal', house: 'LS' },
+          { name: 'R.K. Chaudhary', state: 'Uttar Pradesh', house: 'LS' }
+        ]
+      };
+    }
+  },
+
+  async getRegisteredUsers() {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/users`);
+      return await handleResponse(res);
+    } catch {
+      return { users: [] };
+    }
+  },
+
   async login(username, password) {
     const res = await fetch(`${API_BASE}/api/login`, {
       method: 'POST',
@@ -85,12 +114,44 @@ export const api = {
     });
     const data = await handleResponse(res);
     setAuthSession(data.access_token, {
-      username,
+      username: data.username || username,
       role: data.role,
       name: data.name,
+      state: data.state || '',
+      ida: data.ida || '',
+      mp_name: data.mp_name || '',
+      designation: data.designation || '',
       ...data,
     });
     return data;
+  },
+
+  async register(userData) {
+    const res = await fetch(`${API_BASE}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    });
+    const data = await handleResponse(res);
+    setAuthSession(data.access_token, {
+      username: data.username || userData.username,
+      role: data.role,
+      name: data.name,
+      state: data.state || '',
+      ida: data.ida || '',
+      mp_name: data.mp_name || '',
+      designation: data.designation || '',
+      ...data,
+    });
+    return data;
+  },
+
+  logout() {
+    setAuthSession(null, null);
+  },
+
+  getCurrentUser() {
+    return currentUser;
   },
 
   // Executive Overview & KPIs

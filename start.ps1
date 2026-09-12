@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     BHARAT-DRISHTI // Unified Full-Stack Single-Command Orchestrator
-    Problem Statement 26102 - National MPLADS AI Vigilance System
+    National MPLADS AI Vigilance System
 
 .DESCRIPTION
     Launches all 3 application services with a single command:
@@ -70,7 +70,7 @@ Write-Host "  |  _ \| |_| | / _ \ | |_) | / _ \ | |   | | | | |_) || |\___ \| |_
 Write-Host "  | |_) |  _  |/ ___ \|  _ < / ___ \| |   | |_| |  _ < | | ___) |  _  | | |  | |  " -ForegroundColor Cyan
 Write-Host "  |____/|_| |_/_/   \_\_| \_/_/   \_\_|   |____/|_| \_\___|____/|_| |_| |_| |___| " -ForegroundColor Cyan
 Write-Host "                                                                                " -ForegroundColor Cyan
-Write-Host "  National MPLADS AI Vigilance & Multi-Model Forensic Audit System (PS 26102)   " -ForegroundColor Yellow
+Write-Host "  National MPLADS AI Vigilance & Multi-Model Forensic Audit System              " -ForegroundColor Yellow
 Write-Host "  Single-Command Unified Orchestrator & Live Service Daemon                     " -ForegroundColor Yellow
 Write-Host "================================================================================" -ForegroundColor Cyan
 

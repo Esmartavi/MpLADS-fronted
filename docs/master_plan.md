@@ -1,4 +1,4 @@
-# SIH 2026 — Problem Statement 26102
+# SIH 2026 — National MPLADS AI Vigilance System
 ## AI-Powered Fraud & Anomaly Detection for MPLADS Scheme
 
 > **Organization:** MoSPI — Data Informatics & Innovation Division (DIID)
@@ -544,4 +544,4 @@ The front-end shows this as an interactive India map, a live alert feed with exp
 ---
 
 *Document Version: Final — Incorporates all team feedback and corrections*
-*Problem Statement ID: SIH26102 | Organization: MoSPI*
+*National MPLADS AI Vigilance System | Organization: MoSPI*

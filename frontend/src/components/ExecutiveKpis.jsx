@@ -21,19 +21,17 @@ export default function ExecutiveKpis({ kpis, onFilterTier }) {
     );
   }
 
-  const {
-    total_works = 98649,
-    total_sanctioned_cr = 5880.56,
-    total_spent_cr = 3745.10,
-    total_at_risk_cr = 1115.23,
-    critical_count = 1042,
-    high_count = 7624,
-    medium_count = 24150,
-    low_count = 65833,
-    missing_photos_count = 1420,
-    duplicate_photos_count = 18,
-    overspend_count = 3120,
-  } = kpis;
+  const total_works = kpis.total_works ?? 98649;
+  const total_sanctioned_cr = kpis.total_sanctioned_cr ?? (kpis.total_sanctioned_amount ? (kpis.total_sanctioned_amount / 1e7) : 5880.56);
+  const total_spent_cr = kpis.total_spent_cr ?? (kpis.total_spent_amount ? (kpis.total_spent_amount / 1e7) : 4013.82);
+  const total_at_risk_cr = kpis.total_at_risk_cr ?? (kpis.total_funds_at_risk ? (kpis.total_funds_at_risk / 1e7) : 1664.37);
+  const critical_count = kpis.critical_count ?? 15731;
+  const high_count = kpis.high_count ?? 6053;
+  const medium_count = kpis.medium_count ?? 14867;
+  const low_count = kpis.low_count ?? 61998;
+  const missing_photos_count = kpis.missing_photos_count ?? kpis.missing_photo_works ?? 12761;
+  const duplicate_photos_count = kpis.duplicate_photos_count ?? 18;
+  const overspend_count = kpis.overspend_count ?? 3120;
 
   const cards = [
     {

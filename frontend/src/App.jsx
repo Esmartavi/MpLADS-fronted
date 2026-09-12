@@ -28,20 +28,35 @@ import {
   MapPin,
   UserCheck
 } from 'lucide-react';
+import AuthModal from './components/AuthModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeRole, setActiveRole] = useState('ministry');
+  const [currentUser, setCurrentUser] = useState(api.getCurrentUser());
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login');
   const [selectedWorkId, setSelectedWorkId] = useState(null);
   const [showSecretaryBriefing, setShowSecretaryBriefing] = useState(false);
   const [kpis, setKpis] = useState(null);
   const [initialTier, setInitialTier] = useState('all');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Auto authenticate with demo accounts if not logged in
+  // Synchronize initial authentication session
   useEffect(() => {
-    // Attempt default login as ministry admin
-    api.login('ministry_admin', 'Ministry@2026').catch(() => {});
+    const existing = api.getCurrentUser();
+    if (existing) {
+      setCurrentUser(existing);
+      setActiveRole(existing.role || 'ministry');
+    } else {
+      // Default to ministry demo session for seamless zero-click presentation
+      api.login('ministry_admin', 'Ministry@2026')
+        .then(u => {
+          setCurrentUser(u);
+          setActiveRole(u.role || 'ministry');
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const loadKpis = async () => {
@@ -57,7 +72,7 @@ export default function App() {
     loadKpis();
     const interval = setInterval(loadKpis, 30000);
     return () => clearInterval(interval);
-  }, [activeRole]);
+  }, [activeRole, currentUser]);
 
   const handleRoleChange = async (newRole) => {
     const roleCredentials = {
@@ -69,7 +84,8 @@ export default function App() {
     const creds = roleCredentials[newRole];
     if (creds) {
       try {
-        await api.login(creds[0], creds[1]);
+        const user = await api.login(creds[0], creds[1]);
+        setCurrentUser(user);
         showToast(`Switched access context to ${newRole.toUpperCase()} level`);
       } catch (err) {
         console.error('Role switch error:', err);
@@ -77,6 +93,24 @@ export default function App() {
     }
     setActiveRole(newRole);
     loadKpis();
+  };
+
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setActiveRole(user.role || 'ministry');
+    loadKpis();
+    showToast(`Authenticated as ${user.name} (${user.role.toUpperCase()})`);
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setCurrentUser(null);
+    showToast('Signed out of official account');
+  };
+
+  const openAuthModal = (mode = 'login') => {
+    setAuthModalMode(mode);
+    setShowAuthModal(true);
   };
 
   const showToast = (msg) => {
@@ -99,6 +133,9 @@ export default function App() {
         onOpenSecretaryBriefing={() => setShowSecretaryBriefing(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        currentUser={currentUser}
+        onOpenAuthModal={openAuthModal}
+        onLogout={handleLogout}
       />
 
       {/* Persistent Active Persona Scope Banner */}
@@ -126,10 +163,20 @@ export default function App() {
                   Active Persona Scope
                 </span>
                 <span className="font-bold text-white text-xs">
-                  {activeRole === 'ministry' && 'MoSPI Central Ministry Official — National Oversight Directorate'}
-                  {activeRole === 'state' && 'State Nodal Authority — Uttar Pradesh Directorate'}
-                  {activeRole === 'district' && 'District Authority — Pilibhit Jurisdiction (DM Office)'}
-                  {activeRole === 'mp' && 'Hon\'ble Member of Parliament — Shri Javed Ali Khan (Sambhal, UP)'}
+                  {currentUser ? (
+                    currentUser.role === 'ministry'
+                      ? `${currentUser.name} — MoSPI National Oversight Directorate`
+                      : currentUser.role === 'state'
+                        ? `${currentUser.name} — State Nodal Authority (${currentUser.state})`
+                        : currentUser.role === 'district'
+                          ? `${currentUser.name} — District Authority (${currentUser.ida ? `${currentUser.ida}, ` : ''}${currentUser.state})`
+                          : `${currentUser.name} — Member of Parliament (${currentUser.mp_name || 'Constituency'})`
+                  ) : (
+                    activeRole === 'ministry' ? 'MoSPI Central Ministry Official — National Oversight Directorate' :
+                    activeRole === 'state' ? 'State Nodal Authority — Uttar Pradesh Directorate' :
+                    activeRole === 'district' ? 'District Authority — Pilibhit Jurisdiction (DM Office)' :
+                    'Hon\'ble Member of Parliament — Shri Javed Ali Khan (Sambhal, UP)'
+                  )}
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
@@ -141,17 +188,17 @@ export default function App() {
                   )}
                   {activeRole === 'state' && (
                     kpis 
-                      ? `State Jurisdiction: Uttar Pradesh (75 Districts) // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
-                      : 'State Jurisdiction: Uttar Pradesh // Live Telemetry Loading...'
+                      ? `State Jurisdiction: ${currentUser?.state || 'Uttar Pradesh'} // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : `State Jurisdiction: ${currentUser?.state || 'Uttar Pradesh'} // Live Telemetry Loading...`
                   )}
                   {activeRole === 'district' && (
                     kpis 
-                      ? `District Jurisdiction: Pilibhit, UP // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
-                      : 'District Jurisdiction: Pilibhit, UP // Live Telemetry Loading...'
+                      ? `District Jurisdiction: ${currentUser?.ida ? `${currentUser.ida}, ` : ''}${currentUser?.state || 'Pilibhit, UP'} // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      : `District Jurisdiction: ${currentUser?.ida || 'Pilibhit, UP'} // Live Telemetry Loading...`
                   )}
                   {activeRole === 'mp' && (
                     kpis 
-                      ? `Parliamentary Constituency Scope // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
+                      ? `Parliamentary Constituency Scope: ${currentUser?.mp_name || 'Shri Javed Ali Khan'} // ${kpis.total_works.toLocaleString()} Works Monitored // ${kpis.critical_count.toLocaleString()} Critical Flags`
                       : 'Parliamentary Constituency Scope // Live Telemetry Loading...'
                   )}
                 </span>
@@ -207,10 +254,10 @@ export default function App() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="font-mono text-slate-300">
-                  {activeRole === 'ministry' && <>NATIONAL AUDIT ACTIVE: <strong>98,649 WORKS MONITORED</strong></>}
-                  {activeRole === 'state' && <>STATE AUDIT ACTIVE: <strong>19,892 WORKS IN UTTAR PRADESH</strong></>}
-                  {activeRole === 'district' && <>DISTRICT AUDIT ACTIVE: <strong>293 WORKS IN PILIBHIT</strong></>}
-                  {activeRole === 'mp' && <>CONSTITUENCY AUDIT ACTIVE: <strong>178 WORKS FOR SHRI JAVED ALI KHAN</strong></>}
+                  {activeRole === 'ministry' && <>NATIONAL AUDIT ACTIVE: <strong>{(kpis?.total_works || 98649).toLocaleString()} WORKS MONITORED</strong></>}
+                  {activeRole === 'state' && <>STATE AUDIT ACTIVE: <strong>{(kpis?.total_works || 0).toLocaleString()} WORKS IN {(currentUser?.state || 'UTTAR PRADESH').toUpperCase()}</strong></>}
+                  {activeRole === 'district' && <>DISTRICT AUDIT ACTIVE: <strong>{(kpis?.total_works || 0).toLocaleString()} WORKS IN {(currentUser?.ida || 'PILIBHIT').toUpperCase()}</strong></>}
+                  {activeRole === 'mp' && <>CONSTITUENCY AUDIT ACTIVE: <strong>{(kpis?.total_works || 0).toLocaleString()} WORKS FOR {(currentUser?.mp_name || currentUser?.name || 'MEMBER OF PARLIAMENT').toUpperCase()}</strong></>}
                 </span>
               </div>
               <div className="hidden sm:flex items-center space-x-4 text-slate-400 font-mono text-[11px]">
@@ -364,6 +411,15 @@ export default function App() {
         />
       )}
 
+      {/* Official Authentication & Registration Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
+        onAuthSuccess={handleAuthSuccess}
+        activeRole={activeRole}
+      />
+
       {/* Platform Footer */}
       <footer className="mt-auto border-t border-slate-800/80 bg-navy-950/90 py-6 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -374,7 +430,7 @@ export default function App() {
             </span>
           </div>
           <div className="flex items-center space-x-4 font-mono text-[11px] text-slate-500">
-            <span>MoSPI SIH 2026 // PS-26102</span>
+            <span>MoSPI National Vigilance Portal</span>
             <span>•</span>
             <span>FastAPI + Vite + React 19 + Tailwind v3.4</span>
           </div>

@@ -25,7 +25,7 @@ for d in dirs_to_create:
 moves = [
     # Documentation
     ("a.txt", "docs"),
-    ("ps26102_master_plan.md", "docs"),
+    ("master_plan.md", "docs"),
     ("FRONTEND_API_GUIDE.md", "docs"),
     ("flow.md", "docs"),
     ("decision.md", "docs"),

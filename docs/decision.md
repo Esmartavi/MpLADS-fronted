@@ -1,6 +1,6 @@
 # MPLADS Fraud Detection - Design Decisions Log
 
-This document records the critical technical, domain, and modeling decisions made during the development of the MPLADS fraud detection system for SIH26102.
+This document records the critical technical, domain, and modeling decisions made during the development of the MPLADS fraud detection system.
 
 ## 1. Data Cleaning Decisions
 *   **MP Name Cleaning:** Government data appends session/tenure data to names in brackets (e.g., `(18LS)` or `(2022-28)`). We use regex `\s*\(.*?\)\s*$` to strip *only* trailing brackets, preserving legitimate middle names like `(A)`.

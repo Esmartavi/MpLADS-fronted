@@ -1,6 +1,6 @@
 # MPLADS Fraud Detection - Architecture & Data Flow
 
-This document outlines the end-to-end data pipeline and execution flow for the SIH26102 project.
+This document outlines the end-to-end data pipeline and execution flow for the National MPLADS AI Vigilance System project.
 
 ## Phase 1: Data Cleaning & Standardization (`clean_data.py`)
 **Goal:** Ingest raw, messy government CSVs and produce clean, reliable datasets with unified schemas and hard primary keys.

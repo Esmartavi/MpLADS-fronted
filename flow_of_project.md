@@ -1,6 +1,6 @@
 # 🇮🇳 BHARAT-DRISHTI // PROJECT ARCHITECTURE & END-TO-END FLOW
 ### *AI-Powered Forensic Vigilance & Anti-Corruption Engine for MPLADS*
-**MoSPI Problem Statement 26102** | **Full System Guide for Judges & Technical Presentation**
+**MoSPI National Vigilance System** | **Full System Guide for Judges & Technical Presentation**
 
 ---
 

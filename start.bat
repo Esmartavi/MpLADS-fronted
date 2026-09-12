@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo ================================================================================
-echo   BHARAT-DRISHTI // National MPLADS AI Vigilance System (PS 26102)
+echo   BHARAT-DRISHTI // National MPLADS AI Vigilance System
 echo   Launching All Services (FastAPI + Vite + Pipeline Worker)...
 echo ================================================================================
 REM ── Check if fraud_flags.csv exists; auto-run ML pipeline if missing ────────
