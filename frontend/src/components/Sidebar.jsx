@@ -14,7 +14,8 @@ import {
   Menu, 
   X 
 } from 'lucide-react';
-import emblemLogo from '../assets/logo_dark.jpg';
+import logoDark from '../assets/logo_dark.jpg';
+import logoLight from '../assets/logo_light.jpg';
 
 export default function Sidebar({
   activeTab,
@@ -27,6 +28,8 @@ export default function Sidebar({
 }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  const emblemLogo = theme === 'light' ? logoLight : logoDark;
 
   // Desktop hover expansion or mobile drawer toggle
   const isExpanded = isHovered || isMobileOpen;
@@ -124,23 +127,26 @@ export default function Sidebar({
           <div className={`flex items-center transition-all duration-300 ${
             isExpanded ? 'justify-start space-x-2.5' : 'justify-center'
           }`}>
-            <div className="relative w-9 h-9 rounded-xl p-0.5 flex-shrink-0" style={{ border: '1px solid rgba(139,92,246,0.35)', background: 'rgba(139,92,246,0.08)' }}>
+            <div className="relative w-9 h-9 rounded-xl p-0.5 flex-shrink-0" style={{ 
+              border: theme === 'light' ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(139,92,246,0.35)', 
+              background: theme === 'light' ? '#ffffff' : 'rgba(139,92,246,0.08)' 
+            }}>
               <img 
                 src={emblemLogo} 
                 alt="Emblem" 
                 className="w-full h-full object-cover rounded-lg" 
               />
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#080c1a]" style={{ boxShadow: '0 0 6px rgba(52,211,153,0.7)' }} />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2" style={{ borderColor: theme === 'light' ? '#ffffff' : '#080c1a', boxShadow: '0 0 6px rgba(52,211,153,0.7)' }} />
             </div>
 
             {/* Title & Badge (Visible when expanded) */}
             <div className={`overflow-hidden transition-all duration-300 ${
               isExpanded ? 'opacity-100 max-w-[200px] ml-1' : 'opacity-0 max-w-0 pointer-events-none hidden md:block md:w-0'
             }`}>
-              <span className="font-extrabold text-white text-[13.5px] tracking-[0.1em] font-display block whitespace-nowrap">BHARAT-DRISHTI</span>
+              <span className={`font-extrabold text-[13.5px] tracking-[0.1em] font-display block whitespace-nowrap ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>BHARAT-DRISHTI</span>
               <div className="flex items-center space-x-1.5 mt-0.5 whitespace-nowrap">
-                <span className="text-[9.5px] px-1.5 py-0.25 rounded font-mono font-bold tracking-wider" style={{ background: 'rgba(139,92,246,0.15)', color: 'rgba(196,181,253,0.95)', border: '1px solid rgba(139,92,246,0.25)' }}>MoSPI DIID</span>
-                <span className="text-[10px] text-slate-400 font-medium">Vigilance AI</span>
+                <span className="text-[9.5px] px-1.5 py-0.25 rounded font-mono font-bold tracking-wider" style={{ background: 'rgba(139,92,246,0.15)', color: theme === 'light' ? '#6d28d9' : 'rgba(196,181,253,0.95)', border: '1px solid rgba(139,92,246,0.25)' }}>MoSPI DIID</span>
+                <span className={`text-[10px] font-medium ${theme === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>Vigilance AI</span>
               </div>
             </div>
           </div>

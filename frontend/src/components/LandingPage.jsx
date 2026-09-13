@@ -27,10 +27,12 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import emblemLogo from '../assets/logo_dark.jpg';
+import logoDark from '../assets/logo_dark.jpg';
+import logoLight from '../assets/logo_light.jpg';
 
 export default function LandingPage({ onLoginSuccess, onOpenAuthModal, theme = 'dark', onToggleTheme }) {
   const [animReady, setAnimReady] = useState(false);
+  const emblemLogo = theme === 'light' ? logoLight : logoDark;
 
   useEffect(() => {
     // Smooth high-tech emblem ignition animation on mount

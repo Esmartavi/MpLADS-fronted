@@ -24,9 +24,11 @@ import {
   Layers
 } from 'lucide-react';
 import { api } from '../services/api';
-import emblemLogo from '../assets/logo_dark.jpg';
+import logoDark from '../assets/logo_dark.jpg';
+import logoLight from '../assets/logo_light.jpg';
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAuthSuccess, theme = 'dark' }) {
+  const emblemLogo = theme === 'light' ? logoLight : logoDark;
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
   const [selectedRole, setSelectedRole] = useState('ministry');
   const [loading, setLoading] = useState(false);

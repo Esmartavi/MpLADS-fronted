@@ -160,6 +160,7 @@ export default function App() {
           initialMode={authModalMode}
           onAuthSuccess={handleAuthSuccess}
           activeRole={activeRole}
+          theme={theme}
         />
         {toastMessage && (
           <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl glass-panel-glow border border-violet-500/40 text-sm font-semibold text-violet-200 shadow-2xl flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-5">
